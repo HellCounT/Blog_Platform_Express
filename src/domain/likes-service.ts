@@ -27,7 +27,7 @@ export const likesForPostsService = {
             postId: postId,
             userId: userId,
             userLogin: userLogin,
-            addedAt: new Date().toISOString(),
+            addedAt: new Date(),
             likeStatus: likeStatus
         }
         await likesForPostsRepo.createNewLike(newLike)

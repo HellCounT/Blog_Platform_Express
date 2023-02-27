@@ -36,7 +36,7 @@ export type PostLikeInsertDbType = {
     postId: string,
     userId: string,
     userLogin: string,
-    addedAt: string,
+    addedAt: Date,
     likeStatus: LikeStatus
 }
 export type UserInsertDbType = {

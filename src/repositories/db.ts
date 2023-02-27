@@ -103,7 +103,7 @@ const likeInPostSchema = new mongoose.Schema<PostLikeInsertDbType>({
     postId: {type: String, required: true},
     userId: {type: String, required: true},
     userLogin: {type: String, required: true},
-    addedAt: {type: String, required: true},
+    addedAt: {type: Date, required: true},
     likeStatus: {LikeStatus, required: true}
 })
 export const LikeInPostClass = mongoose.model('likesInPosts', likeInPostSchema)

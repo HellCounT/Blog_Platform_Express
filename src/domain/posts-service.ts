@@ -71,7 +71,7 @@ export const postsService = {
                     }
                     break
             }
-            if (foundUserLike) {
+            if (!foundUserLike) {
                 await likesForPostsService.createNewLike(postId, activeUserId.toString(), activeUserLogin, inputLikeStatus)
                 await postsRepo.updateLikesCounters(currentLikesCount, currentDislikesCount, postId)
                 return {

@@ -1,12 +1,4 @@
 import {Request, Response, Router} from "express";
-import {
-    activeSessionsCollection,
-    blogsCollection,
-    commentsCollection,
-    expiredTokensCollection, likesInCommentsCollection,
-    postsCollection,
-    usersCollection
-} from "../repositories/db";
 
 export const deleteAllRouter = Router({})
 
@@ -18,5 +10,6 @@ deleteAllRouter.delete('/all-data', async (req: Request, res: Response) => {
     await expiredTokensCollection.deleteMany({})
     await activeSessionsCollection.deleteMany({})
     await likesInCommentsCollection.deleteMany({})
+    await likesInPostsCollection.deleteMany({})
     res.sendStatus(204)
 })

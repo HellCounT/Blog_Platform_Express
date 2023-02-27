@@ -22,7 +22,11 @@ export const postsRepo = {
             const saveResult = await postInstance.save()
             return {
                 id: saveResult._id.toString(),
-                ...mappedPost,
+                title: mappedPost.title,
+                shortDescription: mappedPost.shortDescription,
+                content: mappedPost.content,
+                blogId: mappedPost.blogId,
+                blogName: mappedPost.blogName,
                 createdAt: mappedPost.createdAt.toISOString(),
                 extendedLikesInfo: {
                     likesCount: mappedPost.likesInfo.likesCount,
