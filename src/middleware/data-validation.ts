@@ -1,46 +1,46 @@
 import {NextFunction, Request, Response} from "express";
 import {body, CustomValidator, param, validationResult} from "express-validator";
-import {blogsCollection, postsCollection, usersCollection} from "../repositories/db";
 import {ObjectId} from "mongodb";
 import {LikeStatus} from "../types/types";
+import {BlogModelClass, PostModelClass, UserModelClass} from "../repositories/db";
 
 const isValidBlogId: CustomValidator = async (blogId: string) => {
-    if (await blogsCollection.findOne({_id: new ObjectId(blogId)})) {
+    if (await BlogModelClass.findOne({_id: new ObjectId(blogId)})) {
         return true
     } else {
         throw new Error('Invalid parent blog id')
     }
 }
 const isValidBlogIdParam: CustomValidator = async (id: string) => {
-    if (await blogsCollection.findOne({_id: new ObjectId(id)})) {
+    if (await BlogModelClass.findOne({_id: new ObjectId(id)})) {
         return true
     } else {
         throw new Error('Invalid parent blog id')
     }
 }
 const isValidPostIdParam: CustomValidator = async (id: string) => {
-    if (await postsCollection.findOne({_id: new ObjectId(id)})) {
+    if (await PostModelClass.findOne({_id: new ObjectId(id)})) {
         return true
     } else {
         throw new Error('Invalid parent post id')
     }
 }
 const userAlreadyExistsEmail: CustomValidator = async (email: string) => {
-    if (!await usersCollection.findOne({"accountData.email": email})) {
+    if (!await UserModelClass.findOne({"accountData.email": email})) {
         return true
     } else {
         throw new Error('User already exists')
     }
 }
 const userAlreadyExistsLogin: CustomValidator = async (login: string) => {
-    if (!await usersCollection.findOne({"accountData.login": login})) {
+    if (!await UserModelClass.findOne({"accountData.login": login})) {
         return true
     } else {
         throw new Error('User already exists')
     }
 }
 const userEmailExistsOrConfirmed: CustomValidator = async (email: string) => {
-    const foundUser = await usersCollection.findOne({"accountData.email": email})
+    const foundUser = await UserModelClass.findOne({"accountData.email": email})
     if (foundUser) {
         if (foundUser.emailConfirmationData.isConfirmed) throw new Error('Already confirmed')
         else return true
@@ -49,7 +49,7 @@ const userEmailExistsOrConfirmed: CustomValidator = async (email: string) => {
     }
 }
 const validationCodeExistsAndNotConfirmed: CustomValidator = async (code: string) => {
-    const foundUser = await usersCollection.findOne({"emailConfirmationData.confirmationCode": code})
+    const foundUser = await UserModelClass.findOne({"emailConfirmationData.confirmationCode": code})
     if (foundUser) {
         if (foundUser.emailConfirmationData.isConfirmed) throw new Error('Already confirmed')
         else return true
@@ -58,10 +58,9 @@ const validationCodeExistsAndNotConfirmed: CustomValidator = async (code: string
     }
 }
 const likeModelValidator: CustomValidator = (likeInput: string) => {
-    if (likeInput === LikeStatus.like
+    return likeInput === LikeStatus.like
         || likeInput === LikeStatus.dislike
-        || likeInput === LikeStatus.none) return true
-    else return false
+        || likeInput === LikeStatus.none;
 }
 
 export const blogDataValidator = {

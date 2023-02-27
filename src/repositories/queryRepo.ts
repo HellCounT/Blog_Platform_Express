@@ -22,7 +22,15 @@ import {
 } from "../types/types";
 import {jwtService} from "../application/jwt-service";
 import {settings} from "../settings";
-import {BlogModelClass} from "./db";
+import {
+    ActiveSessionModelClass,
+    BlogModelClass,
+    CommentModelClass,
+    LikeInCommentModelClass,
+    LikeInPostModelClass,
+    PostModelClass,
+    UserModelClass
+} from "./db";
 
 export const blogsQueryRepo = {
     async viewAllBlogs(q: QueryParser): Promise<BlogPaginatorType> {
@@ -33,7 +41,7 @@ export const blogsQueryRepo = {
             .find({"name": {$regex: filter, $options: 'i'}})
             .sort({[q.sortBy]: q.sortDirection})
             .skip((q.pageNumber - 1) * q.pageSize)
-            .limit(q.pageSize)
+            .limit(q.pageSize).lean()
         const pageBlogs = reqPageDbBlogs.map(b => (blogsQueryRepo._mapBlogToViewType(b)))
         return {
             pagesCount: Math.ceil(allBlogsCount / q.pageSize),
@@ -46,8 +54,8 @@ export const blogsQueryRepo = {
     async findBlogById(id: string): Promise<BlogViewType | null> {
         if (!ObjectId.isValid(id)) return null
         else {
-            const foundBlog = await blogsCollection.findOne({_id: new ObjectId(id)})
-            if (foundBlog) return blogsQueryRepo._mapBlogToViewType(foundBlog)
+            const foundBlogInstance = await BlogModelClass.findOne({_id: new ObjectId(id)}).lean()
+            if (foundBlogInstance) return blogsQueryRepo._mapBlogToViewType(foundBlogInstance)
             else return null
         }
     },
@@ -64,12 +72,11 @@ export const blogsQueryRepo = {
 
 export const postsQueryRepo = {
     async viewAllPosts(q: QueryParser, activeUserId: string): Promise<PostPaginatorType> {
-        const allPostsCount = await postsCollection.countDocuments()
-        const reqPageDbPosts = await postsCollection.find()
+        const allPostsCount = await PostModelClass.countDocuments()
+        const reqPageDbPosts = await PostModelClass.find()
             .sort({[q.sortBy]: q.sortDirection})
             .skip((q.pageNumber - 1) * q.pageSize)
-            .limit(q.pageSize)
-            .toArray()
+            .limit(q.pageSize).lean()
         const items = []
         for await (const p of reqPageDbPosts) {
             const post = await this._mapPostToViewType(p, activeUserId)
@@ -86,8 +93,8 @@ export const postsQueryRepo = {
     async findPostById(id: string, activeUserId: string): Promise<PostViewType | null> {
         if (!ObjectId.isValid(id)) return null
         else {
-            const foundPost = await postsCollection.findOne({_id: new ObjectId(id)})
-            if (foundPost) return postsQueryRepo._mapPostToViewType(foundPost, activeUserId)
+            const foundPostInstance = await PostModelClass.findOne({_id: new ObjectId(id)})
+            if (foundPostInstance) return postsQueryRepo._mapPostToViewType(foundPostInstance, activeUserId)
             else return null
         }
     },
@@ -95,12 +102,12 @@ export const postsQueryRepo = {
         if (!ObjectId.isValid(blogId)) return null
         else {
             if (await blogsQueryRepo.findBlogById(blogId)) {
-                const foundPostsCount = await postsCollection.countDocuments({blogId: {$eq: blogId}})
-                const reqPageDbPosts = await postsCollection.find({blogId: {$eq: blogId}})
+                const foundPostsCount = await PostModelClass.countDocuments({blogId: {$eq: blogId}})
+                const reqPageDbPosts = await PostModelClass.find({blogId: {$eq: blogId}})
                     .sort({[q.sortBy]: q.sortDirection})
                     .skip((q.pageNumber - 1) * q.pageSize)
                     .limit(q.pageSize)
-                    .toArray()
+                    .lean()
                 if (!reqPageDbPosts) return null
                 else {
                     const items = []
@@ -120,16 +127,16 @@ export const postsQueryRepo = {
         }
     },
     async getUserLikeForPost(userId: string, postId: string) {
-        return await likesInPostsCollection.findOne({
+        return LikeInPostModelClass.findOne({
             "postId": postId,
             "userId": userId
         })
     },
     async _getNewestLikes(postId: string) {
-        return await likesInPostsCollection.find({
+        return LikeInPostModelClass.find({
             "postId": postId,
             "likeStatus": LikeStatus.like
-        }).sort({"addedAt": -1}).limit(3).toArray()
+        }).sort({"addedAt": -1}).limit(3).lean()
     },
     async _mapPostToViewType(post: WithId<PostDbType>, userId: string): Promise<PostViewType> {
         const userLike = await this.getUserLikeForPost(userId, post._id.toString())
@@ -159,12 +166,12 @@ export const postsQueryRepo = {
 
 export const commentsQueryRepo = {
     async findCommentsByPostId(postId: string, q: QueryParser, activeUserId = ''): Promise<CommentPaginatorType | null> {
-        const foundCommentsCount = await commentsCollection.countDocuments({postId: {$eq: postId}})
-        const reqPageDbComments = await commentsCollection.find({postId: {$eq: postId}})
+        const foundCommentsCount = await CommentModelClass.countDocuments({postId: {$eq: postId}})
+        const reqPageDbComments = await CommentModelClass.find({postId: {$eq: postId}})
             .sort({[q.sortBy]: q.sortDirection})
             .skip((q.pageNumber - 1) * q.pageSize)
             .limit(q.pageSize)
-            .toArray()
+            .lean()
         if (!reqPageDbComments) return null
         else {
             const items = []
@@ -184,13 +191,13 @@ export const commentsQueryRepo = {
     async findCommentById(id: string, activeUserId: string): Promise<CommentViewType | null> {
         if (!ObjectId.isValid(id)) return null
         else {
-            const foundComment = await commentsCollection.findOne({_id: new ObjectId(id)})
-            if (foundComment) return commentsQueryRepo._mapCommentToViewType(foundComment, activeUserId)
+            const foundCommentInstance = await CommentModelClass.findOne({_id: new ObjectId(id)})
+            if (foundCommentInstance) return commentsQueryRepo._mapCommentToViewType(foundCommentInstance, activeUserId)
             else return null
         }
     },
     async getUserLikeForComment(userId: string, commentId: string): Promise<WithId<CommentLikeInsertDbType> | null> {
-        return await likesInCommentsCollection.findOne({
+        return LikeInCommentModelClass.findOne({
             "commentId": commentId,
             "userId": userId
         })
@@ -220,7 +227,7 @@ export const usersQueryRepo = {
         let emailFilter: string = ""
         if (q.searchLoginTerm) loginFilter = ".*" + q.searchLoginTerm + ".*"
         if (q.searchEmailTerm) emailFilter = ".*" + q.searchEmailTerm + ".*"
-        const allUsersCount = await usersCollection.countDocuments(
+        const allUsersCount = await UserModelClass.countDocuments(
             {
                 $or: [
                     {login: {$regex: loginFilter, $options: 'i'}},
@@ -228,7 +235,7 @@ export const usersQueryRepo = {
                 ]
             }
         )
-        const reqPageDbUsers = await usersCollection
+        const reqPageDbUsers = await UserModelClass
             .find(
                 {
                     $or: [
@@ -240,7 +247,7 @@ export const usersQueryRepo = {
             .sort({[q.sortBy]: q.sortDirection})
             .skip((q.pageNumber - 1) * q.pageSize)
             .limit(q.pageSize)
-            .toArray()
+            .lean()
         const pageUsers = reqPageDbUsers.map(u => (usersQueryRepo._mapUserToViewType(u)))
         return {
             pagesCount: Math.ceil(allUsersCount / q.pageSize),
@@ -259,7 +266,7 @@ export const usersQueryRepo = {
         }
     },
     async findUserById(userId: ObjectId): Promise<WithId<UserInsertDbType> | null> {
-        return await usersCollection.findOne({_id: {$eq: userId}})
+        return UserModelClass.findOne({_id: {$eq: userId}})
     },
     async getMyInfo(token: string): Promise<MeViewType | null> {
         const foundUserId = await jwtService.getUserIdByToken(token, settings.JWT_SECRET)
@@ -275,11 +282,11 @@ export const usersQueryRepo = {
     async getAllSessions(refreshToken: string): Promise<Array<DeviceViewType> | null> {
         const foundUserId = await jwtService.getUserIdByToken(refreshToken, settings.JWT_REFRESH_SECRET)
         if (!foundUserId) return null
-        const sessions = await activeSessionsCollection.find({userId: {$eq: foundUserId}}).toArray()
+        const sessions = await ActiveSessionModelClass.find({userId: {$eq: foundUserId}}).lean()
         return sessions.map(e => this._mapDevicesToViewType(e))
     },
     async findSessionByDeviceId(deviceId: ObjectId): Promise<ActiveSessionDbType | null> {
-        return await activeSessionsCollection.findOne({_id: deviceId})
+        return ActiveSessionModelClass.findOne({_id: deviceId})
     },
     _mapDevicesToViewType(device: ActiveSessionDbType): DeviceViewType {
         return {

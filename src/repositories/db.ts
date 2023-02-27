@@ -19,7 +19,7 @@ if (!mongoUri) {
 
 console.log(mongoUri)
 
-const postSchema = new mongoose.Schema<PostDbType>({
+const PostSchema = new mongoose.Schema<PostDbType>({
     title: {type: String, required: true},
     shortDescription: {type: String, required: true},
     content: {type: String, required: true},
@@ -31,17 +31,17 @@ const postSchema = new mongoose.Schema<PostDbType>({
         dislikesCount: {type: Number, required: true}
     }
 })
-export const PostModelClass = mongoose.model('posts', postSchema)
+export const PostModelClass = mongoose.model('posts', PostSchema)
 
-const blogSchema = new mongoose.Schema<Blog>({
+const BlogSchema = new mongoose.Schema<Blog>({
     name: {type: String, required: true},
     description: {type: String, required: true},
     websiteUrl: {type: String, required: true},
     createdAt: {type: String, required: true},
 })
-export const BlogModelClass = mongoose.model('blogs', blogSchema)
+export const BlogModelClass = mongoose.model('blogs', BlogSchema)
 
-const userSchema = new mongoose.Schema<UserInsertDbType>({
+const UserSchema = new mongoose.Schema<UserInsertDbType>({
     accountData: {
         login: {type: String, required: true},
         email: {type: String, required: true},
@@ -58,9 +58,9 @@ const userSchema = new mongoose.Schema<UserInsertDbType>({
         expirationDate: {type: Date, required: false}
     }
 })
-export const UserModelClass = mongoose.model('users', userSchema)
+export const UserModelClass = mongoose.model('users', UserSchema)
 
-const commentSchema = new mongoose.Schema<CommentInsertDbType>({
+const CommentSchema = new mongoose.Schema<CommentInsertDbType>({
     content: {type: String, required: true},
     commentatorInfo: {
         userId: {type: String, required: true},
@@ -73,15 +73,15 @@ const commentSchema = new mongoose.Schema<CommentInsertDbType>({
         dislikesCount: {type: Number, required: true}
     }
 })
-export const CommentModelClass = mongoose.model('comments', commentSchema)
+export const CommentModelClass = mongoose.model('comments', CommentSchema)
 
-const expiredTokenSchema = new mongoose.Schema<ExpiredTokenInsertDbType>({
+const ExpiredTokenSchema = new mongoose.Schema<ExpiredTokenInsertDbType>({
     userId: {type: ObjectId, required: true},
     refreshToken: {type: String, required: true}
 })
-export const ExpiredTokenModelClass = mongoose.model('expiredTokens', expiredTokenSchema)
+export const ExpiredTokenModelClass = mongoose.model('expiredTokens', ExpiredTokenSchema)
 
-const activeSessionSchema = new mongoose.Schema<ActiveSessionDbType>({
+const ActiveSessionSchema = new mongoose.Schema<ActiveSessionDbType>({
     _id: {type: ObjectId, required: true},
     userId: {type: ObjectId, required: true},
     ip: {type: String, required: true},
@@ -90,23 +90,23 @@ const activeSessionSchema = new mongoose.Schema<ActiveSessionDbType>({
     expirationDate: {type: Date, required: true},
     refreshTokenMeta: {type: String, required: true}
 })
-export const ActiveSessionModelClass = mongoose.model('activeSessions', activeSessionSchema)
+export const ActiveSessionModelClass = mongoose.model('activeSessions', ActiveSessionSchema)
 
-const likeInCommentSchema = new mongoose.Schema<CommentLikeInsertDbType>({
+const LikeInCommentSchema = new mongoose.Schema<CommentLikeInsertDbType>({
     commentId: {type: String, required: true},
     userId: {type: String, required: true},
     likeStatus: {LikeStatus, required: true}
 })
-export const LikeInCommentModelClass = mongoose.model('likesInComments', likeInCommentSchema)
+export const LikeInCommentModelClass = mongoose.model('likesInComments', LikeInCommentSchema)
 
-const likeInPostSchema = new mongoose.Schema<PostLikeInsertDbType>({
+const LikeInPostSchema = new mongoose.Schema<PostLikeInsertDbType>({
     postId: {type: String, required: true},
     userId: {type: String, required: true},
     userLogin: {type: String, required: true},
     addedAt: {type: Date, required: true},
     likeStatus: {LikeStatus, required: true}
 })
-export const LikeInPostModelClass = mongoose.model('likesInPosts', likeInPostSchema)
+export const LikeInPostModelClass = mongoose.model('likesInPosts', LikeInPostSchema)
 
 export const runDb = async() => {
     try {
