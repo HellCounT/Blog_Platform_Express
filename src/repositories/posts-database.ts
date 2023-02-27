@@ -1,10 +1,10 @@
-import {blogsCollection, postsCollection} from "./db";
 import {ObjectId} from "mongodb";
 import {LikeStatus, PostCreateType, PostViewType} from "../types/types";
+import {BlogModelClass, PostModelClass} from "./db";
 
 export const postsRepo = {
     async createPost(newPost: PostCreateType): Promise<PostViewType | null> {
-        const foundBlog = await blogsCollection.findOne({_id: new ObjectId(newPost.blogId)})
+        const foundBlog = await BlogModelClass.findOne({_id: new ObjectId(newPost.blogId)})
         if (foundBlog) {
             const mappedPost = {
                 title: newPost.title,
@@ -18,9 +18,10 @@ export const postsRepo = {
                     dislikesCount: 0
                 }
             }
-            const result = await postsCollection.insertOne({...mappedPost})
+            const postInstance = new PostModelClass(mappedPost)
+            const saveResult = await postInstance.save()
             return {
-                id: result.insertedId.toString(),
+                id: saveResult._id.toString(),
                 ...mappedPost,
                 createdAt: mappedPost.createdAt.toISOString(),
                 extendedLikesInfo: {
@@ -32,42 +33,42 @@ export const postsRepo = {
             }
         } else return null
     },
-    async updatePost(inputId: string, postTitle: string, short: string, text: string, blogId: string) {
-        const foundBlog = await blogsCollection.findOne({_id: new ObjectId(blogId)})
+    async updatePost(inputId: string, postTitle: string, short: string, text: string, blogId: string): Promise<boolean | null> {
+        const foundBlog = await BlogModelClass.findOne({_id: new ObjectId(blogId)})
         if (!foundBlog) return null
         else {
-            const result = await postsCollection.updateOne({_id: new ObjectId(inputId)}, {$set:
-                    {
-                        title: postTitle,
-                        shortDescription: short,
-                        content: text,
-                        blogId: blogId,
-                        blogName: foundBlog.name
-                    }
-            })
-            return result.matchedCount === 1
+            const postInstance = await PostModelClass.findOne({_id: new ObjectId(inputId)})
+            if (!postInstance) return false
+            postInstance.title = postTitle
+            postInstance.shortDescription = short
+            postInstance.content = text
+            postInstance.blogId = blogId
+            postInstance.blogName = foundBlog.name
+            await postInstance.save()
+            return true
         }
     },
-    async deletePost(inputId: string) {
+    async deletePost(inputId: string): Promise<boolean | null> {
         if (ObjectId.isValid(inputId)) {
-            const result = await postsCollection.deleteOne({_id: new ObjectId(inputId)})
-            return result.deletedCount === 1
+            const postInstance = await PostModelClass.findOne({_id: new ObjectId(inputId)})
+            if (!postInstance) return false
+            await postInstance.deleteOne()
+            return true
         } else return null
     },
     async updateBlogNameInAllRelatedPosts(blogId: string, blogName: string): Promise<void> {
-        await postsCollection.updateMany({blogId: blogId}, {$set:
+        await PostModelClass.updateMany({blogId: blogId}, {$set:
                 {
                     blogName: blogName
                 }})
     },
     async updateLikesCounters(newLikesCount: number, newDislikesCount: number, postId: string) {
-        await postsCollection.updateOne({_id: new ObjectId(postId)}, {
-            $set:
-                {
-                    "extendedLikesInfo.likesCount": newLikesCount,
-                    "extendedLikesInfo.dislikesCount": newDislikesCount
-                }
-        })
-        return
+        const postInstance = await PostModelClass.findOne({_id: new ObjectId(postId)})
+        if (postInstance) {
+            postInstance.likesInfo.likesCount = newLikesCount
+            postInstance.likesInfo.dislikesCount = newDislikesCount
+            await postInstance.save()
+            return
+        } else return
     }
 }

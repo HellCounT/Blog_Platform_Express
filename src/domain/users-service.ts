@@ -64,7 +64,7 @@ export const usersService = {
         if (foundUser.emailConfirmationData.isConfirmed) return false
         if (foundUser.emailConfirmationData.confirmationCode !== code) return false
         if (new Date(foundUser.emailConfirmationData.expirationDate) < new Date()) return false
-        return await usersRepo.confirmUser(foundUser._id.toString())
+        return await usersRepo.confirmationSetUser(foundUser._id.toString())
     },
     async resendActivationCode(email: string): Promise<boolean> {
         const foundUser = await usersRepo.findByLoginOrEmail(email)

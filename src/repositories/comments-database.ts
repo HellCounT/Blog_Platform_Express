@@ -1,11 +1,11 @@
 import {ObjectId} from "mongodb";
-import {commentsCollection, postsCollection, usersCollection} from "./db";
 import {CommentCreateType, CommentInsertDbType, CommentViewType, LikeStatus} from "../types/types";
+import {CommentModelClass, PostModelClass, UserModelClass} from "./db";
 
 export const commentsRepo = {
     async createComment(newComment: CommentCreateType): Promise<CommentViewType | null> {
-        const foundUser = await usersCollection.findOne({_id: new ObjectId(newComment.userId)})
-        const foundPost = await postsCollection.findOne({_id: new ObjectId(newComment.postId)})
+        const foundUser = await UserModelClass.findOne({_id: new ObjectId(newComment.userId)})
+        const foundPost = await PostModelClass.findOne({_id: new ObjectId(newComment.postId)})
         if (foundPost && foundUser) {
             const mappedComment: CommentInsertDbType = {
                 content: newComment.content,
@@ -20,9 +20,10 @@ export const commentsRepo = {
                     dislikesCount: 0,
                 }
             }
-            const result = await commentsCollection.insertOne({...mappedComment})
+            const commentInstance = new CommentModelClass(mappedComment)
+            const result = await commentInstance.save()
             return {
-                id: result.insertedId.toString(),
+                id: result._id.toString(),
                 content: mappedComment.content,
                 commentatorInfo: {
                     userId: mappedComment.commentatorInfo.userId,
@@ -38,33 +39,31 @@ export const commentsRepo = {
         } else return null
     },
     async updateComment(commentId: string, content: string): Promise<boolean | null> {
-        const foundComment = await commentsCollection.findOne({_id: new ObjectId(commentId)})
-        if (!foundComment) return null
+        const commentInstance = await CommentModelClass.findOne({_id: new ObjectId(commentId)})
+        if (!commentInstance) return null
         else {
-            const result = await commentsCollection.updateOne({_id: new ObjectId(commentId)},
-                {
-                    $set:
-                        {
-                            content: content
-                        }
-                })
-            return result.matchedCount === 1
+            commentInstance.content = content
+            await commentInstance.save()
+            return true
         }
     },
     async deleteComment(commentId: string): Promise<boolean | null> {
         if (ObjectId.isValid(commentId)) {
-            const result = await commentsCollection.deleteOne({_id: new ObjectId(commentId)})
-            return result.deletedCount === 1
+            const commentInstance = await CommentModelClass.findOne({_id: new ObjectId(commentId)})
+            if (commentInstance) {
+                await commentInstance.deleteOne()
+                return true
+            } else return false
         } else return null
     },
     async updateLikesCounters(newLikesCount: number, newDislikesCount: number, commentId: string) {
-        await commentsCollection.updateOne({_id: new ObjectId(commentId)}, {
-            $set:
-                {
-                    "likesInfo.likesCount": newLikesCount,
-                    "likesInfo.dislikesCount": newDislikesCount
-                }
-        })
+        const commentInstance = await CommentModelClass.findOne({_id: new ObjectId(commentId)})
+        if (commentInstance) {
+            commentInstance.likesInfo.likesCount = newLikesCount
+            commentInstance.likesInfo.dislikesCount = newDislikesCount
+            await commentInstance.save()
+            return
+        }
         return
     }
 }

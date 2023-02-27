@@ -51,9 +51,9 @@ export type UserInsertDbType = {
         expirationDate: string,
         isConfirmed: boolean,
     },
-    recoveryCodeData?: {
-        recoveryCode: string,
-        expirationDate: string,
+    recoveryCodeData: {
+        recoveryCode?: string,
+        expirationDate?: Date,
     }
 }
 export type UserCreateType = {

@@ -1,9 +1,11 @@
 import {blogsRepo} from '../repositories/blogs-database'
-import {Blog, BlogViewType} from "../types/types";
+import {BlogDbType, BlogViewType} from "../types/types";
+import {ObjectId} from "mongodb";
 
 export const blogsService = {
     async createBlog(title: string, desc: string, website: string): Promise<BlogViewType> {
-        const newBlog: Blog = {
+        const newBlog: BlogDbType = {
+            _id: new ObjectId(),
             name: title,
             description: desc,
             websiteUrl: website,
@@ -11,7 +13,7 @@ export const blogsService = {
         }
         const result = await blogsRepo.createBlog(newBlog)
         return {
-            id: result.insertedId.toString(),
+            id: result._id.toString(),
             ...newBlog
         }
     },

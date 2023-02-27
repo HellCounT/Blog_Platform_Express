@@ -1,45 +1,48 @@
 import {CommentLikeInsertDbType, LikeStatus, PostLikeInsertDbType} from "../types/types";
-import {likesInCommentsCollection, likesInPostsCollection} from "./db";
+import {LikeInCommentClass, LikeInPostClass} from "./db";
 
 export const likesForCommentsRepo = {
-    async createNewLike(NewLike: CommentLikeInsertDbType): Promise<void> {
-        await likesInCommentsCollection.insertOne(NewLike)
+    async createNewLike(newLike: CommentLikeInsertDbType): Promise<void> {
+        const likeInCommentInstance = new LikeInCommentClass(newLike)
+        await likeInCommentInstance.save()
         return
     },
     async updateLikeStatus(commentId: string, userId: string, likeStatus: LikeStatus): Promise<void> {
-        await likesInCommentsCollection.updateOne({
+        const likeInCommentInstance = await LikeInCommentClass.findOne({
             commentId: commentId,
             userId: userId
-        }, {
-            $set: {
-                likeStatus: likeStatus
-            }
         })
-        return
+        if (likeInCommentInstance) {
+            likeInCommentInstance.likeStatus = likeStatus
+            await likeInCommentInstance.save()
+            return
+        } else return
     },
     async deleteAllLikesWhenCommentIsDeleted(commentId: string): Promise<void> {
-        await likesInCommentsCollection.deleteMany({commentId: commentId})
+        await LikeInCommentClass.deleteMany({commentId: commentId})
         return
     }
 }
 
 export const likesForPostsRepo = {
-    async createNewLike(NewLike: PostLikeInsertDbType): Promise<void> {
-        await likesInPostsCollection.insertOne(NewLike)
+    async createNewLike(newLike: PostLikeInsertDbType): Promise<void> {
+        const likeInPostInstance = new LikeInPostClass(newLike)
+        await likeInPostInstance.save()
         return
     },
     async updateLikeStatus(postId: string, userId: string, likeStatus: LikeStatus): Promise<void> {
-        await likesInPostsCollection.updateOne({
+        const likeInPostInstance = await LikeInPostClass.findOne({
             postId: postId,
             userId: userId
-        }, {
-            $set: {
-                likeStatus: likeStatus
-            }
         })
+        if (likeInPostInstance) {
+            likeInPostInstance.likeStatus = likeStatus
+            await likeInPostInstance.save()
+            return
+        } else return
     },
     async deleteAllLikesWhenPostIsDeleted(postId: string): Promise<void> {
-        await likesInPostsCollection.deleteMany({postId: postId})
+        await LikeInPostClass.deleteMany({postId: postId})
         return
     }
 }

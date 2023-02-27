@@ -1,12 +1,3 @@
-import {
-    activeSessionsCollection,
-    blogsCollection,
-    commentsCollection,
-    likesInCommentsCollection,
-    likesInPostsCollection,
-    postsCollection,
-    usersCollection
-} from "./db";
 import {ObjectId, WithId} from "mongodb";
 import {
     ActiveSessionDbType,
@@ -31,13 +22,14 @@ import {
 } from "../types/types";
 import {jwtService} from "../application/jwt-service";
 import {settings} from "../settings";
+import {BlogModelClass} from "./db";
 
 export const blogsQueryRepo = {
     async viewAllBlogs(q: QueryParser): Promise<BlogPaginatorType> {
         let filter: string = ""
         if (q.searchNameTerm) filter = ".*" + q.searchNameTerm + ".*"
-        const allBlogsCount = await blogsCollection.countDocuments({"name": {$regex: filter, $options: 'i'}})
-        const reqPageDbBlogs = await blogsCollection
+        const allBlogsCount = await BlogModelClass.countDocuments({"name": {$regex: filter, $options: 'i'}})
+        const reqPageDbBlogs = await BlogModelClass
             .find({"name": {$regex: filter, $options: 'i'}})
             .sort({[q.sortBy]: q.sortDirection})
             .skip((q.pageNumber - 1) * q.pageSize)

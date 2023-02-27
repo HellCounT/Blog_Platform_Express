@@ -1,20 +1,20 @@
-import {usersCollection} from "./db";
 import {ObjectId, WithId} from "mongodb";
 import {UserCreateType, UserInsertDbType, UserViewType} from "../types/types";
+import {UserModelClass} from "./db";
 
 export const usersRepo = {
     async findByLoginOrEmail(loginOrEmail: string) {
-        return await usersCollection.findOne({
+        return UserModelClass.findOne({
             $or: [{'accountData.email': loginOrEmail},
                 {'accountData.login': loginOrEmail}]
-        })
+        }).lean()
     },
     async findByConfirmationCode(emailConfirmationCode: string): Promise<WithId<UserInsertDbType> | null> {
-        return await usersCollection.findOne(
+        return UserModelClass.findOne(
             {'emailConfirmationData.confirmationCode': emailConfirmationCode})
     },
     async findByRecoveryCode(recoveryCode: string): Promise<WithId<UserInsertDbType> | null> {
-        return await usersCollection.findOne(
+        return UserModelClass.findOne(
             {'recoveryCodeData.recoveryCode': recoveryCode}
         )
     },
@@ -30,55 +30,63 @@ export const usersRepo = {
                 confirmationCode: newUser.confirmationCode,
                 expirationDate: newUser.expirationDate,
                 isConfirmed: newUser.isConfirmed
+            },
+            recoveryCodeData: {
+                recoveryCode: undefined,
+                expirationDate: undefined
             }
         }
-        const result = await usersCollection.insertOne({...insertDbUser})
+        const userInstance = new UserModelClass(insertDbUser)
+        const result = await userInstance.save()
         return {
-            id: result.insertedId.toString(),
-            login: insertDbUser.accountData.login,
-            email: insertDbUser.accountData.email,
-            createdAt: insertDbUser.accountData.createdAt
+            id: result._id.toString(),
+            login: result.accountData.login,
+            email: result.accountData.email,
+            createdAt: result.accountData.createdAt
         }
     },
     async deleteUser(id: string): Promise<boolean | null> {
-        if (ObjectId.isValid(id)) {
-            const result = await usersCollection.deleteOne({_id: new ObjectId(id)})
-            return result.deletedCount === 1
-        } else return null
+        const userInstance = await UserModelClass.findOne({_id: new ObjectId(id)})
+        if (!userInstance) return false
+        await userInstance.deleteOne()
+        return true
     },
-    async confirmUser(id: string): Promise<boolean> {
-        const result = await usersCollection.updateOne({_id: new ObjectId(id)}, {
-            $set:
-                {
-                    'emailConfirmationData.isConfirmed': true
-                }
-        })
-        return result.matchedCount === 1
+    async confirmationSetUser(id: string): Promise<boolean> {
+        const userInstance = await UserModelClass.findOne({_id: id})
+        if (!userInstance) return false
+        userInstance.emailConfirmationData.isConfirmed = true
+        userInstance.save()
+        return true
     },
     async updateConfirmationCode(id: ObjectId, newCode: string): Promise<void> {
-        await usersCollection.updateOne({_id: id}, {
-            $set:
-                {
-                    'emailConfirmationData.confirmationCode': newCode
-                }
-        })
-        return
+        const userInstance = await UserModelClass.findOne({_id: id})
+        if (!userInstance) {
+            return
+        } else {
+            userInstance.emailConfirmationData.confirmationCode = newCode
+            await userInstance.save()
+            return
+        }
     },
     async updateRecoveryCode(id: ObjectId, newRecoveryCode: string): Promise<void> {
-        await usersCollection.updateOne({_id: id}, {
-            $set:
-                {
-                    'recoveryCodeData.recoveryCode': newRecoveryCode,
-                    'recoveryCodeData.expirationDate': new Date()
-                }
-        })
+        const userInstance = await UserModelClass.findOne({_id: id})
+        if (!userInstance) {
+            return
+        } else {
+            userInstance.recoveryCodeData.recoveryCode = newRecoveryCode
+            userInstance.recoveryCodeData.expirationDate = new Date()
+            await userInstance.save()
+            return
+        }
     },
     async updateHashByRecoveryCode(id: ObjectId, newHash: string): Promise<void> {
-        await usersCollection.updateOne({_id: id}, {
-            $set:
-                {
-                    'accountData.hash': newHash
-                }
-        })
+        const userInstance = await UserModelClass.findOne({_id: id})
+        if (!userInstance) {
+            return
+        } else {
+            userInstance.accountData.hash = newHash
+            await userInstance.save()
+            return
+        }
     }
 }
