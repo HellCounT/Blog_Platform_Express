@@ -83,14 +83,14 @@ const ActiveSessionSchema = new mongoose.Schema<ActiveSessionDbType>({
 const LikeInCommentSchema = new mongoose.Schema<CommentLikeInsertDbType>({
     commentId: {type: String, required: true},
     userId: {type: String, required: true},
-    likeStatus: {LikeStatus, required: true}
+    likeStatus: {type: String, enum: Object.values(LikeStatus), required: true}
 })
 const LikeInPostSchema = new mongoose.Schema<PostLikeInsertDbType>({
     postId: {type: String, required: true},
     userId: {type: String, required: true},
     userLogin: {type: String, required: true},
     addedAt: {type: Date, required: true},
-    likeStatus: {LikeStatus, required: true}
+    likeStatus: {type: String, enum: Object.values(LikeStatus), required: true}
 })
 
 export const PostModelClass = mongoose.model('posts', PostSchema)
