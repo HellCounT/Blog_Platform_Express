@@ -79,7 +79,7 @@ const expiredTokenSchema = new mongoose.Schema<ExpiredTokenInsertDbType>({
     userId: {type: ObjectId, required: true},
     refreshToken: {type: String, required: true}
 })
-export const ExpiredTokenClass = mongoose.model('expiredTokens', expiredTokenSchema)
+export const ExpiredTokenModelClass = mongoose.model('expiredTokens', expiredTokenSchema)
 
 const activeSessionSchema = new mongoose.Schema<ActiveSessionDbType>({
     _id: {type: ObjectId, required: true},
@@ -90,14 +90,14 @@ const activeSessionSchema = new mongoose.Schema<ActiveSessionDbType>({
     expirationDate: {type: Date, required: true},
     refreshTokenMeta: {type: String, required: true}
 })
-export const ActiveSessionClass = mongoose.model('activeSessions', activeSessionSchema)
+export const ActiveSessionModelClass = mongoose.model('activeSessions', activeSessionSchema)
 
 const likeInCommentSchema = new mongoose.Schema<CommentLikeInsertDbType>({
     commentId: {type: String, required: true},
     userId: {type: String, required: true},
     likeStatus: {LikeStatus, required: true}
 })
-export const LikeInCommentClass = mongoose.model('likesInComments', likeInCommentSchema)
+export const LikeInCommentModelClass = mongoose.model('likesInComments', likeInCommentSchema)
 
 const likeInPostSchema = new mongoose.Schema<PostLikeInsertDbType>({
     postId: {type: String, required: true},
@@ -106,7 +106,7 @@ const likeInPostSchema = new mongoose.Schema<PostLikeInsertDbType>({
     addedAt: {type: Date, required: true},
     likeStatus: {LikeStatus, required: true}
 })
-export const LikeInPostClass = mongoose.model('likesInPosts', likeInPostSchema)
+export const LikeInPostModelClass = mongoose.model('likesInPosts', likeInPostSchema)
 
 export const runDb = async() => {
     try {

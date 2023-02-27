@@ -1,6 +1,6 @@
 import {ActiveSessionDbType} from "../types/types";
 import {ObjectId} from "mongodb";
-import {ActiveSessionClass} from "./db";
+import {ActiveSessionModelClass} from "./db";
 
 export const devicesRepo = {
     async addSessionToDb(refreshTokenMeta: string, deviceId: ObjectId,
@@ -15,13 +15,13 @@ export const devicesRepo = {
             expirationDate: expDate,
             refreshTokenMeta: refreshTokenMeta
         }
-        const activeSessionInstance = new ActiveSessionClass(newSession)
+        const activeSessionInstance = new ActiveSessionModelClass(newSession)
         await activeSessionInstance.save()
         return
     },
     async updateSessionWithDeviceId(newRefreshTokenMeta: string, deviceId: string,
                                     issueDate: Date, expDate: Date): Promise<boolean> {
-        const activeSessionInstance = await ActiveSessionClass.findOne({_id: new ObjectId(deviceId)})
+        const activeSessionInstance = await ActiveSessionModelClass.findOne({_id: new ObjectId(deviceId)})
         if (activeSessionInstance) {
             activeSessionInstance.issuedAt = issueDate
             activeSessionInstance.expirationDate = expDate
@@ -31,13 +31,13 @@ export const devicesRepo = {
         } else return false
     },
     async deleteSessionById(deviceId: ObjectId): Promise<boolean> {
-        const activeSessionInstance = await ActiveSessionClass.findOne({_id: new ObjectId(deviceId)})
+        const activeSessionInstance = await ActiveSessionModelClass.findOne({_id: new ObjectId(deviceId)})
         if (!activeSessionInstance) return false
         await activeSessionInstance.deleteOne()
         return true
     },
     async deleteAllOtherSessions(userId: ObjectId, deviceId: ObjectId): Promise<boolean> {
-        const result = await ActiveSessionClass.deleteMany({
+        const result = await ActiveSessionModelClass.deleteMany({
             "userId": userId,
             "_id": {$ne: deviceId}
         })
