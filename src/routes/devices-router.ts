@@ -5,25 +5,35 @@ import {devicesService} from "../domain/devices-service";
 
 export const devicesRouter = Router({})
 
-devicesRouter.get('/', refreshTokenCheck, async (req: Request, res: Response) => {
-    const refreshToken = req.cookies.refreshToken
-    const result = await usersQueryRepo.getAllSessions(refreshToken)
-    res.status(200).send(result)
-})
+class DevicesControllerClass {
+    async getAllSessions(req: Request, res: Response) {
+        const refreshToken = req.cookies.refreshToken
+        const result = await usersQueryRepo.getAllSessions(refreshToken)
+        res.status(200).send(result)
+    }
 
-devicesRouter.delete('/', refreshTokenCheck, async (req: Request, res: Response) => {
-    const refreshToken = req.cookies.refreshToken
-    const result = await devicesService.deleteAllOtherSessions(req.user?._id, refreshToken)
-    if (!result) res.sendStatus(404)
-    if (result.code === 204) res.sendStatus(204)
-    if (result.code === 401) res.sendStatus(401)
-})
+    async deleteAllOtherSessions(req: Request, res: Response) {
+        const refreshToken = req.cookies.refreshToken
+        const result = await devicesService.deleteAllOtherSessions(req.user?._id, refreshToken)
+        if (!result) res.sendStatus(404)
+        if (result.code === 204) res.sendStatus(204)
+        if (result.code === 401) res.sendStatus(401)
+    }
 
-devicesRouter.delete('/:deviceId', refreshTokenCheck, async (req: Request, res: Response) => {
-    const refreshToken = req.cookies.refreshToken
-    const result = await devicesService.deleteSession(refreshToken, req.user?._id, req.params.deviceId)
-    if (!result) res.sendStatus(404)
-    if (result.code === 204) res.sendStatus(204)
-    if (result.code === 404) res.sendStatus(404)
-    if (result.code === 403) res.sendStatus(403)
-})
+    async deleteSession(req: Request, res: Response) {
+        const refreshToken = req.cookies.refreshToken
+        const result = await devicesService.deleteSession(refreshToken, req.user?._id, req.params.deviceId)
+        if (!result) res.sendStatus(404)
+        if (result.code === 204) res.sendStatus(204)
+        if (result.code === 404) res.sendStatus(404)
+        if (result.code === 403) res.sendStatus(403)
+    }
+}
+
+const devicesController = new DevicesControllerClass()
+
+devicesRouter.get('/', refreshTokenCheck, devicesController.getAllSessions)
+
+devicesRouter.delete('/', refreshTokenCheck, devicesController.deleteAllOtherSessions)
+
+devicesRouter.delete('/:deviceId', refreshTokenCheck, devicesController.deleteSession)

@@ -8,11 +8,32 @@ import {UserQueryParser} from "../types/types";
 
 export const usersRouter = Router({})
 
-usersRouter.get('/', basicAuth, async (req: Request, res: Response) => {
-    // query validation and parsing
-    let queryParams: UserQueryParser = parseUserQueryPagination(req)
-    res.status(200).send(await usersQueryRepo.viewAllUsers(queryParams))
-})
+class UsersControllerClass {
+    async getAllUsers(req: Request, res: Response) {
+        // query validation and parsing
+        let queryParams: UserQueryParser = parseUserQueryPagination(req)
+        res.status(200).send(await usersQueryRepo.viewAllUsers(queryParams))
+    }
+
+    async createUser(req: Request, res: Response) {
+        //User creation
+        const userCreationResult = await usersService.createUser(req.body.login, req.body.password, req.body.email)
+        if (!userCreationResult) res.sendStatus(400)
+        return res.status(201).send(userCreationResult)
+    }
+
+    async deleteUser(req: Request, res: Response) {
+        if (await usersService.deleteUser(req.params.id)) {
+            res.sendStatus(204)
+        } else {
+            res.sendStatus(404)
+        }
+    }
+}
+
+const userController = new UsersControllerClass()
+
+usersRouter.get('/', basicAuth, userController.getAllUsers)
 
 usersRouter.post('/', basicAuth,
     //Input validation
@@ -21,17 +42,6 @@ usersRouter.post('/', basicAuth,
     userDataValidator.emailCheck,
     inputValidation,
     //Handlers
-    async (req: Request, res: Response) => {
-        //User creation
-        const userCreationResult = await usersService.createUser(req.body.login, req.body.password, req.body.email)
-        if (!userCreationResult) res.sendStatus(400)
-        return res.status(201).send(userCreationResult)
-})
+    userController.createUser)
 
-usersRouter.delete('/:id', basicAuth, async (req: Request, res: Response) => {
-    if (await usersService.deleteUser(req.params.id)) {
-        res.sendStatus(204)
-    } else {
-        res.sendStatus(404)
-    }
-})
+usersRouter.delete('/:id', basicAuth, userController.deleteUser)

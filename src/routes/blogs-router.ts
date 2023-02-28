@@ -15,29 +15,23 @@ import {parseUserIdByToken} from "../middleware/auth-middleware";
 
 export const blogsRouter = Router({})
 
-
-blogsRouter.get('/', async (req: Request, res: Response) => {
-    // query validation and parsing
-    let queryParams: QueryParser = parseQueryPagination(req)
-    res.status(200).send(await blogsQueryRepo.viewAllBlogs(queryParams));
-})
-
-blogsRouter.get('/:id', async (req: Request, res: Response) => {
-    const blogIdSearchResult = await blogsQueryRepo.findBlogById(req.params.id)
-    if (blogIdSearchResult) {
-        res.status(200).send(blogIdSearchResult)
-    } else {
-        res.sendStatus(404)
+class BlogsControllerClass {
+    async getAllBlogs(req: Request, res: Response) {
+        // query validation and parsing
+        let queryParams: QueryParser = parseQueryPagination(req)
+        res.status(200).send(await blogsQueryRepo.viewAllBlogs(queryParams));
     }
-})
 
-blogsRouter.get('/:id/posts',
-    //InputValidation
-    parseUserIdByToken,
-    postDataValidator.blogIdParamCheck,
-    paramIdInputValidation,
-    //Handlers
-    async (req: Request, res: Response) => {
+    async getBlogById(req: Request, res: Response) {
+        const blogIdSearchResult = await blogsQueryRepo.findBlogById(req.params.id)
+        if (blogIdSearchResult) {
+            res.status(200).send(blogIdSearchResult)
+        } else {
+            res.sendStatus(404)
+        }
+    }
+
+    async getPostsForBlogId(req: Request, res: Response) {
         let queryParams: QueryParser = parseQueryPagination(req)
         const postsByBlogIdSearchResult = await postsQueryRepo.findPostsByBlogId(req.params.id, queryParams, req.user?._id.toString())
         if (postsByBlogIdSearchResult) {
@@ -45,7 +39,55 @@ blogsRouter.get('/:id/posts',
         } else {
             res.sendStatus(404)
         }
-    })
+    }
+
+    async createBlog(req: Request, res: Response) {
+        // Blog adding
+        const blogAddResult = await blogsService.createBlog(req.body.name, req.body.description, req.body.websiteUrl)
+        return res.status(201).send(blogAddResult)
+    }
+
+    async createPostForBlogId(req: Request, res: Response) {
+        const postAddResult = await postsService.createPost(req.body.title, req.body.shortDescription, req.body.content, req.params.id)
+        if (postAddResult) {
+            res.status(201).send(postAddResult)
+        } else {
+            res.sendStatus(400)
+        }
+    }
+
+    async updateBlog(req: Request, res: Response) {
+        const flagUpdate = await blogsService.updateBlog(req.params.id, req.body.name, req.body.description, req.body.websiteUrl)
+        if (flagUpdate) {
+            res.sendStatus(204)
+        } else {
+            res.sendStatus(404)
+        }
+    }
+
+    async deleteBlog(req: Request, res: Response) {
+        if (await blogsService.deleteBlog(req.params.id)) {
+            res.sendStatus(204)
+        } else {
+            res.sendStatus(404)
+        }
+    }
+}
+
+const blogsController = new BlogsControllerClass()
+
+
+blogsRouter.get('/', blogsController.getAllBlogs)
+
+blogsRouter.get('/:id', blogsController.getBlogById)
+
+blogsRouter.get('/:id/posts',
+    //InputValidation
+    parseUserIdByToken,
+    postDataValidator.blogIdParamCheck,
+    paramIdInputValidation,
+    //Handlers
+    blogsController.getPostsForBlogId)
 
 blogsRouter.post('/', basicAuth,
     //Input validation
@@ -54,11 +96,7 @@ blogsRouter.post('/', basicAuth,
     blogDataValidator.urlCheck,
     inputValidation,
     //Handlers
-    async (req: Request, res: Response) => {
-        // Blog adding
-        const blogAddResult = await blogsService.createBlog(req.body.name, req.body.description, req.body.websiteUrl)
-        return res.status(201).send(blogAddResult)
-    })
+    blogsController.createBlog)
 
 blogsRouter.post('/:id/posts', basicAuth,
     //Input validation
@@ -69,15 +107,7 @@ blogsRouter.post('/:id/posts', basicAuth,
     postDataValidator.contentCheck,
     inputValidation,
     //Handlers
-    async (req: Request, res: Response) => {
-        const postAddResult = await postsService.createPost(req.body.title, req.body.shortDescription, req.body.content, req.params.id)
-        if (postAddResult) {
-            res.status(201).send(postAddResult)
-        } else {
-            res.sendStatus(400)
-        }
-    }
-)
+    blogsController.createPostForBlogId)
 
 blogsRouter.put('/:id', basicAuth,
     //Input validation
@@ -86,19 +116,6 @@ blogsRouter.put('/:id', basicAuth,
     blogDataValidator.urlCheck,
     inputValidation,
     //Handlers
-    async (req: Request, res: Response) => {
-        const flagUpdate = await blogsService.updateBlog(req.params.id, req.body.name, req.body.description, req.body.websiteUrl)
-        if (flagUpdate) {
-            res.sendStatus(204)
-        } else {
-            res.sendStatus(404)
-        }
-    })
+    blogsController.updateBlog)
 
-blogsRouter.delete('/:id', basicAuth, async (req: Request, res: Response) => {
-    if (await blogsService.deleteBlog(req.params.id)) {
-        res.sendStatus(204)
-    } else {
-        res.sendStatus(404)
-    }
-})
+blogsRouter.delete('/:id', basicAuth, blogsController.deleteBlog)
