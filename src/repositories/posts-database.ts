@@ -2,7 +2,7 @@ import {ObjectId} from "mongodb";
 import {LikeStatus, PostCreateType, PostViewType} from "../types/types";
 import {BlogModelClass, PostModelClass} from "./db";
 
-export const postsRepo = {
+class PostsRepoClass {
     async createPost(newPost: PostCreateType): Promise<PostViewType | null> {
         const foundBlog = await BlogModelClass.findOne({_id: new ObjectId(newPost.blogId)})
         if (foundBlog) {
@@ -36,7 +36,7 @@ export const postsRepo = {
                 }
             }
         } else return null
-    },
+    }
     async updatePost(inputId: string, postTitle: string, short: string, text: string, blogId: string): Promise<boolean | null> {
         const foundBlog = await BlogModelClass.findOne({_id: new ObjectId(blogId)})
         if (!foundBlog) return null
@@ -51,7 +51,7 @@ export const postsRepo = {
             await postInstance.save()
             return true
         }
-    },
+    }
     async deletePost(inputId: string): Promise<boolean | null> {
         if (ObjectId.isValid(inputId)) {
             const postInstance = await PostModelClass.findOne({_id: new ObjectId(inputId)})
@@ -59,13 +59,13 @@ export const postsRepo = {
             await postInstance.deleteOne()
             return true
         } else return null
-    },
+    }
     async updateBlogNameInAllRelatedPosts(blogId: string, blogName: string): Promise<void> {
         await PostModelClass.updateMany({blogId: blogId}, {$set:
                 {
                     blogName: blogName
                 }})
-    },
+    }
     async updateLikesCounters(newLikesCount: number, newDislikesCount: number, postId: string) {
         const postInstance = await PostModelClass.findOne({_id: new ObjectId(postId)})
         if (postInstance) {
@@ -76,3 +76,5 @@ export const postsRepo = {
         } else return
     }
 }
+
+export const postsRepo = new PostsRepoClass()

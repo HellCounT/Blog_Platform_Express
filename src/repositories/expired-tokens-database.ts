@@ -2,7 +2,7 @@ import {ObjectId, WithId} from "mongodb";
 import {ExpiredTokenInsertDbType} from "../types/types";
 import {ExpiredTokenModelClass} from "./db";
 
-export const expiredTokensRepo = {
+class ExpiredTokensRepoClass {
     async addTokenToDb(token: string, userId: ObjectId) {
         const expiredToken: ExpiredTokenInsertDbType = {
             userId: userId,
@@ -11,8 +11,10 @@ export const expiredTokensRepo = {
         const expiredTokenInstance = new ExpiredTokenModelClass(expiredToken)
         await expiredTokenInstance.save()
         return
-    },
+    }
     async findToken(token: string): Promise<WithId<ExpiredTokenInsertDbType> | null> {
         return ExpiredTokenModelClass.findOne({refreshToken: token})
     }
 }
+
+export const expiredTokensRepo = new ExpiredTokensRepoClass()

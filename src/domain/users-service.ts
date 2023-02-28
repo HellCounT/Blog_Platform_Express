@@ -6,7 +6,7 @@ import {emailManager} from "../managers/email-manager";
 import {v4 as uuidv4} from "uuid";
 import add from 'date-fns/add'
 
-export const usersService = {
+class UsersServiceClass {
     async registerUser(login: string, password: string, email: string): Promise<UserViewType | null> {
         const passwordHash = await usersService._generateHash(password)
         const currentDate = new Date()
@@ -28,7 +28,7 @@ export const usersService = {
             return null
         }
         return createUserResult
-    },
+    }
     async createUser(login: string, password: string, email: string): Promise<UserViewType | null> {
         const passwordHash = await usersService._generateHash(password)
         const currentDate = new Date()
@@ -44,10 +44,10 @@ export const usersService = {
         if (await usersRepo.findByLoginOrEmail(login) ||
             await usersRepo.findByLoginOrEmail(email)) return null
         return await usersRepo.createUser(newUser, passwordHash)
-    },
+    }
     async deleteUser(id: string): Promise<boolean | null> {
         return await usersRepo.deleteUser(id)
-    },
+    }
     async checkCredentials(loginOrEmail: string, password: string): Promise<WithId<UserInsertDbType> | null> {
         const foundUser = await usersRepo.findByLoginOrEmail(loginOrEmail)
         if (!foundUser) return null
@@ -57,7 +57,7 @@ export const usersService = {
             if (await bcrypt.compare(password, foundUser.accountData.hash)) return foundUser
             else return null
         }
-    },
+    }
     async confirmUserEmail(code: string): Promise<boolean> {
         const foundUser = await usersRepo.findByConfirmationCode(code)
         if (!foundUser) return false
@@ -65,7 +65,7 @@ export const usersService = {
         if (foundUser.emailConfirmationData.confirmationCode !== code) return false
         if (new Date(foundUser.emailConfirmationData.expirationDate) < new Date()) return false
         return await usersRepo.confirmationSetUser(foundUser._id.toString())
-    },
+    }
     async resendActivationCode(email: string): Promise<boolean> {
         const foundUser = await usersRepo.findByLoginOrEmail(email)
         if (!foundUser) return false
@@ -79,7 +79,7 @@ export const usersService = {
             console.error(error)
             return false
         }
-    },
+    }
     async sendPasswordRecoveryCode(email: string) {
         const newCode = uuidv4()
         const foundUser = await usersRepo.findByLoginOrEmail(email)
@@ -93,7 +93,7 @@ export const usersService = {
             console.error(error)
             return false
         }
-    },
+    }
     async updatePasswordByRecoveryCode(recoveryCode: string, newPassword: string) {
         const foundUser = await usersRepo.findByRecoveryCode(recoveryCode)
         if (!foundUser) return false
@@ -102,9 +102,11 @@ export const usersService = {
             await usersRepo.updateHashByRecoveryCode(foundUser._id, newPasswordHash)
             return true
         }
-    },
+    }
     async _generateHash(password: string) {
         const salt = await bcrypt.genSalt(10)
         return await bcrypt.hash(password, salt)
-    },
+    }
 }
+
+export const usersService = new UsersServiceClass()

@@ -2,7 +2,7 @@ import {ObjectId} from "mongodb";
 import {CommentCreateType, CommentInsertDbType, CommentViewType, LikeStatus} from "../types/types";
 import {CommentModelClass, PostModelClass, UserModelClass} from "./db";
 
-export const commentsRepo = {
+class CommentsRepoClass {
     async createComment(newComment: CommentCreateType): Promise<CommentViewType | null> {
         const foundUser = await UserModelClass.findOne({_id: new ObjectId(newComment.userId)})
         const foundPost = await PostModelClass.findOne({_id: new ObjectId(newComment.postId)})
@@ -37,7 +37,7 @@ export const commentsRepo = {
                 }
             }
         } else return null
-    },
+    }
     async updateComment(commentId: string, content: string): Promise<boolean | null> {
         const commentInstance = await CommentModelClass.findOne({_id: new ObjectId(commentId)})
         if (!commentInstance) return null
@@ -46,7 +46,7 @@ export const commentsRepo = {
             await commentInstance.save()
             return true
         }
-    },
+    }
     async deleteComment(commentId: string): Promise<boolean | null> {
         if (ObjectId.isValid(commentId)) {
             const commentInstance = await CommentModelClass.findOne({_id: new ObjectId(commentId)})
@@ -55,7 +55,7 @@ export const commentsRepo = {
                 return true
             } else return false
         } else return null
-    },
+    }
     async updateLikesCounters(newLikesCount: number, newDislikesCount: number, commentId: string) {
         const commentInstance = await CommentModelClass.findOne({_id: new ObjectId(commentId)})
         if (commentInstance) {
@@ -67,3 +67,5 @@ export const commentsRepo = {
         return
     }
 }
+
+export const commentsRepo = new CommentsRepoClass()

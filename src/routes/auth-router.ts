@@ -5,7 +5,7 @@ import {jwtService} from "../application/jwt-service";
 import {authMiddleware, refreshTokenCheck} from "../middleware/auth-middleware";
 import {usersQueryRepo} from "../repositories/queryRepo";
 import {rateLimiterMiddleware} from "../middleware/rate-limiter-middleware";
-import {devicesService} from "../domain/devices-sevice";
+import {devicesService} from "../domain/devices-service";
 
 export const authRouter = Router({})
 

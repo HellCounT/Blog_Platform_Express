@@ -32,7 +32,7 @@ import {
     UserModelClass
 } from "./db";
 
-export const blogsQueryRepo = {
+class BlogsQueryRepoClass {
     async viewAllBlogs(q: QueryParser): Promise<BlogPaginatorType> {
         let filter: string = ""
         if (q.searchNameTerm) filter = ".*" + q.searchNameTerm + ".*"
@@ -50,7 +50,7 @@ export const blogsQueryRepo = {
             totalCount: allBlogsCount,
             items: pageBlogs
         }
-    },
+    }
     async findBlogById(id: string): Promise<BlogViewType | null> {
         if (!ObjectId.isValid(id)) return null
         else {
@@ -58,7 +58,7 @@ export const blogsQueryRepo = {
             if (foundBlogInstance) return blogsQueryRepo._mapBlogToViewType(foundBlogInstance)
             else return null
         }
-    },
+    }
     _mapBlogToViewType(blog: BlogDbType): BlogViewType {
         return {
             id: blog._id.toString(),
@@ -69,8 +69,7 @@ export const blogsQueryRepo = {
         }
     }
 }
-
-export const postsQueryRepo = {
+class PostsQueryRepoClass {
     async viewAllPosts(q: QueryParser, activeUserId: string): Promise<PostPaginatorType> {
         const allPostsCount = await PostModelClass.countDocuments()
         const reqPageDbPosts = await PostModelClass.find()
@@ -89,7 +88,7 @@ export const postsQueryRepo = {
             totalCount: allPostsCount,
             items: items
         }
-    },
+    }
     async findPostById(id: string, activeUserId: string): Promise<PostViewType | null> {
         if (!ObjectId.isValid(id)) return null
         else {
@@ -97,7 +96,7 @@ export const postsQueryRepo = {
             if (foundPostInstance) return postsQueryRepo._mapPostToViewType(foundPostInstance, activeUserId)
             else return null
         }
-    },
+    }
     async findPostsByBlogId(blogId: string, q: QueryParser, activeUserId: string): Promise<PostPaginatorType | null> {
         if (!ObjectId.isValid(blogId)) return null
         else {
@@ -125,27 +124,27 @@ export const postsQueryRepo = {
                 }
             } else return null
         }
-    },
+    }
     async getUserLikeForPost(userId: string, postId: string) {
         return LikeInPostModelClass.findOne({
             "postId": postId,
             "userId": userId
         })
-    },
+    }
     async _getNewestLikes(postId: string) {
         return LikeInPostModelClass.find({
             "postId": postId,
             "likeStatus": LikeStatus.like
         }).sort({"addedAt": -1}).limit(3).lean()
-    },
+    }
     async _mapPostToViewType(post: WithId<PostDbType>, userId: string): Promise<PostViewType> {
         const userLike = await this.getUserLikeForPost(userId, post._id.toString())
         const newestLikes = await this._getNewestLikes(post._id.toString())
         const mappedLikes = newestLikes.map(e => {return {
-                addedAt: new Date(e.addedAt).toISOString(),
-                userId: e.userId,
-                login: e.userLogin
-            }})
+            addedAt: new Date(e.addedAt).toISOString(),
+            userId: e.userId,
+            login: e.userLogin
+        }})
         return {
             id: post._id.toString(),
             title: post.title,
@@ -163,8 +162,7 @@ export const postsQueryRepo = {
         }
     }
 }
-
-export const commentsQueryRepo = {
+class CommentsQueryRepoClass {
     async findCommentsByPostId(postId: string, q: QueryParser, activeUserId = ''): Promise<CommentPaginatorType | null> {
         const foundCommentsCount = await CommentModelClass.countDocuments({postId: {$eq: postId}})
         const reqPageDbComments = await CommentModelClass.find({postId: {$eq: postId}})
@@ -187,7 +185,7 @@ export const commentsQueryRepo = {
                 items: items
             }
         }
-    },
+    }
     async findCommentById(id: string, activeUserId: string): Promise<CommentViewType | null> {
         if (!ObjectId.isValid(id)) return null
         else {
@@ -195,13 +193,13 @@ export const commentsQueryRepo = {
             if (foundCommentInstance) return commentsQueryRepo._mapCommentToViewType(foundCommentInstance, activeUserId)
             else return null
         }
-    },
+    }
     async getUserLikeForComment(userId: string, commentId: string): Promise<WithId<CommentLikeInsertDbType> | null> {
         return LikeInCommentModelClass.findOne({
             "commentId": commentId,
             "userId": userId
         })
-    },
+    }
     async _mapCommentToViewType(comment: WithId<CommentInsertDbType>, activeUserId: string): Promise<CommentViewType> {
         const like = await this.getUserLikeForComment(activeUserId, comment._id.toString())
         return {
@@ -220,8 +218,7 @@ export const commentsQueryRepo = {
         }
     }
 }
-
-export const usersQueryRepo = {
+class UsersQueryRepoClass {
     async viewAllUsers(q: UserQueryParser): Promise<UserPaginatorType> {
         let loginFilter: string = ""
         let emailFilter: string = ""
@@ -256,7 +253,7 @@ export const usersQueryRepo = {
             totalCount: allUsersCount,
             items: pageUsers
         }
-    },
+    }
     _mapUserToViewType(user: WithId<UserInsertDbType>): UserViewType {
         return {
             id: user._id.toString(),
@@ -264,10 +261,10 @@ export const usersQueryRepo = {
             email: user.accountData.email,
             createdAt: user.accountData.createdAt
         }
-    },
+    }
     async findUserById(userId: ObjectId): Promise<WithId<UserInsertDbType> | null> {
         return UserModelClass.findOne({_id: {$eq: userId}})
-    },
+    }
     async getMyInfo(token: string): Promise<MeViewType | null> {
         const foundUserId = await jwtService.getUserIdByToken(token, settings.JWT_SECRET)
         if (!foundUserId) return null
@@ -278,16 +275,16 @@ export const usersQueryRepo = {
             login: foundUser.accountData.login,
             userId: foundUserId.toString()
         }
-    },
+    }
     async getAllSessions(refreshToken: string): Promise<Array<DeviceViewType> | null> {
         const foundUserId = await jwtService.getUserIdByToken(refreshToken, settings.JWT_REFRESH_SECRET)
         if (!foundUserId) return null
         const sessions = await ActiveSessionModelClass.find({userId: {$eq: foundUserId}}).lean()
         return sessions.map(e => this._mapDevicesToViewType(e))
-    },
+    }
     async findSessionByDeviceId(deviceId: ObjectId): Promise<ActiveSessionDbType | null> {
         return ActiveSessionModelClass.findOne({_id: deviceId})
-    },
+    }
     _mapDevicesToViewType(device: ActiveSessionDbType): DeviceViewType {
         return {
             deviceId: device._id.toString(),
@@ -297,3 +294,8 @@ export const usersQueryRepo = {
         }
     }
 }
+
+export const blogsQueryRepo = new BlogsQueryRepoClass()
+export const postsQueryRepo = new PostsQueryRepoClass()
+export const commentsQueryRepo = new CommentsQueryRepoClass()
+export const usersQueryRepo = new UsersQueryRepoClass()

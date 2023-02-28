@@ -2,7 +2,7 @@ import {blogsRepo} from '../repositories/blogs-database'
 import {BlogDbType, BlogViewType} from "../types/types";
 import {ObjectId} from "mongodb";
 
-export const blogsService = {
+class BlogsServiceClass {
     async createBlog(title: string, desc: string, website: string): Promise<BlogViewType> {
         const newBlog: BlogDbType = {
             _id: new ObjectId(),
@@ -16,11 +16,13 @@ export const blogsService = {
             id: result._id.toString(),
             ...newBlog
         }
-    },
+    }
     async updateBlog(inputId: string, title: string, desc: string, website: string): Promise<boolean | null> {
         return await blogsRepo.updateBlog(inputId, title, desc, website)
-    },
+    }
     async deleteBlog(inputId: string): Promise<boolean | null> {
         return await blogsRepo.deleteBlog(inputId)
     }
 }
+
+export const blogsService = new BlogsServiceClass()

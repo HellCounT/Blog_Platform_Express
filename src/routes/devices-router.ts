@@ -1,7 +1,7 @@
 import {Request, Response, Router} from "express";
 import {refreshTokenCheck} from "../middleware/auth-middleware";
 import {usersQueryRepo} from "../repositories/queryRepo";
-import {devicesService} from "../domain/devices-sevice";
+import {devicesService} from "../domain/devices-service";
 
 export const devicesRouter = Router({})
 

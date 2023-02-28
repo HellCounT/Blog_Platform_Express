@@ -3,7 +3,7 @@ import {ObjectId, WithId} from "mongodb";
 import {UserInsertDbType} from "../types/types";
 import {settings} from "../settings";
 import {expiredTokensRepo} from "../repositories/expired-tokens-database";
-import {devicesService} from "../domain/devices-sevice";
+import {devicesService} from "../domain/devices-service";
 
 export const jwtService = {
     createJwt(user: WithId<UserInsertDbType>): string {

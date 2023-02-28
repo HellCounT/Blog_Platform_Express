@@ -4,7 +4,7 @@ import {ObjectId} from "mongodb";
 import {commentsQueryRepo} from "../repositories/queryRepo";
 import {likesForCommentsService} from "./likes-service";
 
-export const commentsService = {
+class CommentsServiceClass {
     async createComment(postId: string, userId: ObjectId, content: string) {
         const newComment: CommentCreateType = {
             content: content,
@@ -13,7 +13,7 @@ export const commentsService = {
             createdAt: new Date().toISOString()
         }
         return await commentsRepo.createComment(newComment)
-    },
+    }
     async updateComment(commentId: string, userId: ObjectId, content: string): Promise<StatusType> {
         const foundComment = await commentsQueryRepo.findCommentById(commentId, userId.toString())
         if (!foundComment) return {status: "Not Found"}
@@ -29,7 +29,7 @@ export const commentsService = {
             code: 403,
             message: "User is not allowed to edit other user's comment"
         }
-    },
+    }
     async deleteComment(commentId: string, userId: ObjectId): Promise<StatusType> {
         const foundComment = await commentsQueryRepo.findCommentById(commentId, userId.toString())
         if (!foundComment) return {
@@ -50,7 +50,7 @@ export const commentsService = {
             code: 403,
             message: "User is not allowed to delete other user's comment"
         }
-    },
+    }
     async updateLikeStatus(commentId: string, activeUserId: ObjectId, inputLikeStatus: LikeStatus): Promise<StatusType> {
         const foundComment = await commentsQueryRepo.findCommentById(commentId, activeUserId.toString())
         if (!foundComment) {
@@ -118,3 +118,5 @@ export const commentsService = {
 
     }
 }
+
+export const commentsService = new CommentsServiceClass()

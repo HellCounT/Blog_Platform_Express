@@ -4,7 +4,7 @@ import {ObjectId} from "mongodb";
 import {postsQueryRepo} from "../repositories/queryRepo";
 import {likesForPostsService} from "./likes-service";
 
-export const postsService = {
+class PostServiceClass {
     async createPost(postTitle: string, short: string, text: string, blogId: string): Promise<PostViewType | null> {
         const newPost: PostCreateType = {
             title: postTitle,
@@ -13,18 +13,18 @@ export const postsService = {
             blogId: blogId,
             createdAt: new Date
         }
-            return await postsRepo.createPost(newPost)
-    },
+        return await postsRepo.createPost(newPost)
+    }
     async updatePost(inputId: string, postTitle: string, short: string, text: string, blogId: string): Promise <boolean | null> {
         return await postsRepo.updatePost(inputId, postTitle, short, text, blogId)
-    },
+    }
     async deletePost(inputId: string): Promise <boolean | null> {
         await likesForPostsService.deleteAllLikesWhenPostIsDeleted(inputId)
         return await postsRepo.deletePost(inputId)
-    },
+    }
     async updateBlogNameInAllRelatedPosts(blogId: string, blogName: string): Promise<void> {
         return await postsRepo.updateBlogNameInAllRelatedPosts(blogId, blogName)
-    },
+    }
     async updateLikeStatus(postId: string, activeUserId: ObjectId, activeUserLogin: string, inputLikeStatus: LikeStatus): Promise<StatusType> {
         const foundPost = await postsQueryRepo.findPostById(postId, activeUserId.toString())
         if (!foundPost) {
@@ -91,3 +91,5 @@ export const postsService = {
         }
     }
 }
+
+export const postsService = new PostServiceClass()
