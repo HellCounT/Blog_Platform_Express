@@ -42,7 +42,7 @@ class BlogsQueryRepoClass {
             .sort({[q.sortBy]: q.sortDirection})
             .skip((q.pageNumber - 1) * q.pageSize)
             .limit(q.pageSize).lean()
-        const pageBlogs = reqPageDbBlogs.map(b => (blogsQueryRepo._mapBlogToViewType(b)))
+        const pageBlogs = reqPageDbBlogs.map(b => (this._mapBlogToViewType(b)))
         return {
             pagesCount: Math.ceil(allBlogsCount / q.pageSize),
             page: q.pageNumber,
@@ -100,7 +100,7 @@ class PostsQueryRepoClass {
     async findPostsByBlogId(blogId: string, q: QueryParser, activeUserId: string): Promise<PostPaginatorType | null> {
         if (!ObjectId.isValid(blogId)) return null
         else {
-            if (await blogsQueryRepo.findBlogById(blogId)) {
+            if (await BlogModelClass.findOne({_id: new ObjectId(blogId)}).lean()) {
                 const foundPostsCount = await PostModelClass.countDocuments({blogId: {$eq: blogId}})
                 const reqPageDbPosts = await PostModelClass.find({blogId: {$eq: blogId}})
                     .sort({[q.sortBy]: q.sortDirection})
@@ -190,7 +190,7 @@ class CommentsQueryRepoClass {
         if (!ObjectId.isValid(id)) return null
         else {
             const foundCommentInstance = await CommentModelClass.findOne({_id: new ObjectId(id)})
-            if (foundCommentInstance) return commentsQueryRepo._mapCommentToViewType(foundCommentInstance, activeUserId)
+            if (foundCommentInstance) return this._mapCommentToViewType(foundCommentInstance, activeUserId)
             else return null
         }
     }
@@ -245,7 +245,7 @@ class UsersQueryRepoClass {
             .skip((q.pageNumber - 1) * q.pageSize)
             .limit(q.pageSize)
             .lean()
-        const pageUsers = reqPageDbUsers.map(u => (usersQueryRepo._mapUserToViewType(u)))
+        const pageUsers = reqPageDbUsers.map(u => (this._mapUserToViewType(u)))
         return {
             pagesCount: Math.ceil(allUsersCount / q.pageSize),
             page: q.pageNumber,
