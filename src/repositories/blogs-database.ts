@@ -1,11 +1,11 @@
 import {ObjectId} from "mongodb";
 import {BlogDbType} from "../types/types";
 import {postsService} from "../domain/posts-service";
-import {BlogModelClass, PostModelClass} from "./db";
+import {BlogModelClass} from "./db";
 
 export const blogsRepo = {
     async createBlog(newBlog: BlogDbType): Promise<BlogDbType> {
-        const blogInstance = new PostModelClass(newBlog)
+        const blogInstance = new BlogModelClass(newBlog)
         await blogInstance.save()
         return newBlog
     },
