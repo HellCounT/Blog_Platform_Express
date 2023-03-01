@@ -1,15 +1,19 @@
 import {ObjectId} from "mongodb";
-import {devicesRepo} from "../repositories/devices-database";
-import {jwtService} from "../application/jwt-service";
 import {ActiveSessionDbClass, StatusType} from "../types/types";
+import {DevicesRepoClass} from "../repositories/devices-database";
+import {jwtService} from "../application/jwt-service";
 import {usersQueryRepo} from "../repositories/queryRepo";
 
-class DevicesServiceClass {
+export class DevicesServiceClass {
+    private devicesRepo: DevicesRepoClass;
+    constructor() {
+        this.devicesRepo = new DevicesRepoClass()
+    }
     async deleteSession(refreshToken: string, userId: ObjectId, deviceId: string): Promise<StatusType> {
         const foundSession = await usersQueryRepo.findSessionByDeviceId(new ObjectId(deviceId))
         if (foundSession) {
             if (foundSession.userId.toString() === userId.toString()) {
-                await devicesRepo.deleteSessionById(new ObjectId(deviceId))
+                await this.devicesRepo.deleteSessionById(new ObjectId(deviceId))
                 return {
                     status: "Deleted",
                     code: 204,
@@ -33,14 +37,14 @@ class DevicesServiceClass {
     async logoutSession(refreshToken: string): Promise<void> {
         const sessionId = await jwtService.getDeviceIdByRefreshToken(refreshToken)
         if (sessionId) {
-            await devicesRepo.deleteSessionById(sessionId)
+            await this.devicesRepo.deleteSessionById(sessionId)
             return
         }
     }
     async deleteAllOtherSessions(userId: ObjectId, refreshToken: string): Promise<StatusType> {
         const deviceId = await jwtService.getDeviceIdByRefreshToken(refreshToken)
         if (deviceId) {
-            await devicesRepo.deleteAllOtherSessions(userId, deviceId)
+            await this.devicesRepo.deleteAllOtherSessions(userId, deviceId)
             return {
                 status: "Deleted",
                 code: 204,
@@ -67,12 +71,12 @@ class DevicesServiceClass {
             expDate,
             refreshTokenMeta
         )
-        await devicesRepo.addSessionToDb(newSession)
+        await this.devicesRepo.addSessionToDb(newSession)
     }
     async updateSessionWithDeviceId(newRefreshToken: string, deviceId: string,
                                     issueDate: Date, expDate: Date) {
         const newRefreshTokenMeta = this._createMeta(newRefreshToken)
-        return await devicesRepo.updateSessionWithDeviceId(newRefreshTokenMeta, deviceId, issueDate, expDate)
+        return await this.devicesRepo.updateSessionWithDeviceId(newRefreshTokenMeta, deviceId, issueDate, expDate)
     }
     _createMeta(refreshToken: string): string {
         const header = refreshToken.split('.')[0]
@@ -80,5 +84,3 @@ class DevicesServiceClass {
         return header + '.' + payload
     }
 }
-
-export const devicesService = new DevicesServiceClass()

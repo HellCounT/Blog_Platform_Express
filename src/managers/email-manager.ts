@@ -1,6 +1,6 @@
 import {transport} from "../adapters/email-adapter";
 
-class EmailManagerClass {
+export class EmailManagerClass {
     async sendEmailRegistrationCode(email: string, code: string) {
         await transport.sendMail({
             from: 'Blog Platform <hellcount.test@gmail.com>',
@@ -35,5 +35,3 @@ class EmailManagerClass {
         })
     }
 }
-
-export const emailManager = new EmailManagerClass()

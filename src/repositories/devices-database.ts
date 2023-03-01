@@ -2,7 +2,7 @@ import {ActiveSessionDbClass} from "../types/types";
 import {ObjectId} from "mongodb";
 import {ActiveSessionModelClass} from "./db";
 
-class DevicesRepoClass {
+export class DevicesRepoClass {
     async addSessionToDb(newSession: ActiveSessionDbClass): Promise<void> {
         const activeSessionInstance = new ActiveSessionModelClass(newSession)
         await activeSessionInstance.save()
@@ -33,5 +33,3 @@ class DevicesRepoClass {
         return result.deletedCount >= 1
     }
 }
-
-export const devicesRepo = new DevicesRepoClass()

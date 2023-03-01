@@ -1,24 +1,32 @@
 import {ObjectId} from "mongodb";
 import {BlogDbType} from "../types/types";
-import {postsService} from "../domain/posts-service";
-import {BlogModelClass} from "./db";
+import {BlogModelClass, PostModelClass} from "./db";
 
-class BlogsRepoClass {
+export class BlogsRepoClass {
     async createBlog(newBlog: BlogDbType): Promise<BlogDbType> {
         const blogInstance = new BlogModelClass(newBlog)
         await blogInstance.save()
         return newBlog
     }
+
     async updateBlog(inputId: string, title: string, desc: string, website: string): Promise<boolean> {
-        if (title) await postsService.updateBlogNameInAllRelatedPosts(inputId, title)
         const blogInstance = await BlogModelClass.findOne({_id: new ObjectId(inputId)})
         if (!blogInstance) return false
-        blogInstance.name = title
-        blogInstance.description = desc
-        blogInstance.websiteUrl = website
+        if (title) {
+            blogInstance.name = title
+            await PostModelClass.updateMany({blogId: inputId}, {
+                $set:
+                    {
+                        blogName: title
+                    }
+            })
+        }
+        if (desc) blogInstance.description = desc
+        if (website) blogInstance.websiteUrl = website
         await blogInstance.save()
         return true
     }
+
     async deleteBlog(inputId: string): Promise<boolean> {
         const blogInstance = await BlogModelClass.findOne({_id: new ObjectId(inputId)})
         if (!blogInstance) return false
@@ -26,5 +34,3 @@ class BlogsRepoClass {
         return true
     }
 }
-
-export const blogsRepo = new BlogsRepoClass()

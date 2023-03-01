@@ -2,7 +2,7 @@ import {ObjectId} from "mongodb";
 import {CommentDbType, CommentViewType, LikeStatus} from "../types/types";
 import {CommentModelClass} from "./db";
 
-class CommentsRepoClass {
+export class CommentsRepoClass {
     async createComment(newComment: CommentDbType): Promise<CommentViewType | null> {
         const commentInstance = new CommentModelClass(newComment)
         const result = await commentInstance.save()
@@ -53,5 +53,3 @@ class CommentsRepoClass {
         return
     }
 }
-
-export const commentsRepo = new CommentsRepoClass()

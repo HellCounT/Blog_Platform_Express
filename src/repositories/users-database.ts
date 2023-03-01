@@ -2,7 +2,7 @@ import {ObjectId, WithId} from "mongodb";
 import {UserDbType, UserViewType} from "../types/types";
 import {UserModelClass} from "./db";
 
-class UsersRepoClass {
+export class UsersRepoClass {
     async findByLoginOrEmail(loginOrEmail: string) {
         return UserModelClass.findOne({
             $or: [{'accountData.email': loginOrEmail},
@@ -73,5 +73,3 @@ class UsersRepoClass {
         }
     }
 }
-
-export const usersRepo = new UsersRepoClass()

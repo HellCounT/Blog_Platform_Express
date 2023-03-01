@@ -1,8 +1,12 @@
 import {CommentLikeDbClass, LikeStatus, PostLikeDbClass} from "../types/types";
-import {likesForCommentsRepo, likesForPostsRepo} from "../repositories/likes-database";
 import {ObjectId} from "mongodb";
+import {LikesForCommentsRepoClass, LikesForPostsRepoClass} from "../repositories/likes-database";
 
-class LikesForCommentsServiceClass {
+export class LikesForCommentsServiceClass {
+    private likesForCommentsRepo: LikesForCommentsRepoClass;
+    constructor() {
+        this.likesForCommentsRepo = new LikesForCommentsRepoClass()
+    }
     async createNewLike(commentId: string, userId: string, likeStatus: LikeStatus): Promise<void> {
         const newLike = new CommentLikeDbClass(
             new ObjectId(),
@@ -10,19 +14,23 @@ class LikesForCommentsServiceClass {
             userId,
             likeStatus
         )
-        await likesForCommentsRepo.createNewLike(newLike)
+        await this.likesForCommentsRepo.createNewLike(newLike)
         return
     }
     async updateLikeStatus(commentId: string, userId: string, likeStatus: LikeStatus): Promise<void> {
-        await likesForCommentsRepo.updateLikeStatus(commentId, userId, likeStatus)
+        await this.likesForCommentsRepo.updateLikeStatus(commentId, userId, likeStatus)
         return
     }
     async deleteAllLikesWhenCommentIsDeleted(commentId: string): Promise<void> {
-        await likesForCommentsRepo.deleteAllLikesWhenCommentIsDeleted(commentId)
+        await this.likesForCommentsRepo.deleteAllLikesWhenCommentIsDeleted(commentId)
         return
     }
 }
-class LikesForPostsServiceClass {
+export class LikesForPostsServiceClass {
+    private likesForPostsRepo: LikesForPostsRepoClass;
+    constructor() {
+        this.likesForPostsRepo = new LikesForPostsRepoClass()
+    }
     async createNewLike(postId: string, userId: string, userLogin: string, likeStatus: LikeStatus): Promise<void> {
         const newLike = new PostLikeDbClass(
             new ObjectId(),
@@ -32,18 +40,15 @@ class LikesForPostsServiceClass {
             new Date(),
             likeStatus
         )
-        await likesForPostsRepo.createNewLike(newLike)
+        await this.likesForPostsRepo.createNewLike(newLike)
         return
     }
     async updateLikeStatus(postId: string, userId: string, likeStatus: LikeStatus): Promise<void> {
-        await likesForPostsRepo.updateLikeStatus(postId, userId, likeStatus)
+        await this.likesForPostsRepo.updateLikeStatus(postId, userId, likeStatus)
         return
     }
     async deleteAllLikesWhenPostIsDeleted(postId: string): Promise<void> {
-        await likesForPostsRepo.deleteAllLikesWhenPostIsDeleted(postId)
+        await this.likesForPostsRepo.deleteAllLikesWhenPostIsDeleted(postId)
         return
     }
 }
-
-export const likesForCommentsService = new LikesForCommentsServiceClass()
-export const likesForPostsService = new LikesForPostsServiceClass()

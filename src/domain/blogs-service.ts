@@ -1,8 +1,12 @@
-import {blogsRepo} from '../repositories/blogs-database'
 import {BlogDbClass, BlogViewType} from "../types/types";
 import {ObjectId} from "mongodb";
+import {BlogsRepoClass} from "../repositories/blogs-database";
 
-class BlogsServiceClass {
+export class BlogsServiceClass {
+    private blogsRepo: BlogsRepoClass;
+    constructor() {
+        this.blogsRepo = new BlogsRepoClass()
+    }
     async createBlog(title: string, desc: string, website: string): Promise<BlogViewType> {
         const newBlog = new BlogDbClass(
             new ObjectId(),
@@ -11,18 +15,16 @@ class BlogsServiceClass {
             website,
             new Date().toISOString()
         )
-        const result = await blogsRepo.createBlog(newBlog)
+        const result = await this.blogsRepo.createBlog(newBlog)
         return {
             id: result._id.toString(),
             ...newBlog
         }
     }
     async updateBlog(inputId: string, title: string, desc: string, website: string): Promise<boolean | null> {
-        return await blogsRepo.updateBlog(inputId, title, desc, website)
+        return await this.blogsRepo.updateBlog(inputId, title, desc, website)
     }
     async deleteBlog(inputId: string): Promise<boolean | null> {
-        return await blogsRepo.deleteBlog(inputId)
+        return await this.blogsRepo.deleteBlog(inputId)
     }
 }
-
-export const blogsService = new BlogsServiceClass()

@@ -1,10 +1,16 @@
-import {commentsRepo} from "../repositories/comments-database";
 import {CommentDbClass, CommentViewType, LikeStatus, StatusType} from "../types/types";
 import {ObjectId} from "mongodb";
+import {CommentsRepoClass} from "../repositories/comments-database";
+import {LikesForCommentsServiceClass} from "./likes-service";
 import {commentsQueryRepo, postsQueryRepo, usersQueryRepo} from "../repositories/queryRepo";
-import {likesForCommentsService} from "./likes-service";
 
-class CommentsServiceClass {
+export class CommentsServiceClass {
+    private commentsRepo: CommentsRepoClass;
+    private likesForCommentsService: LikesForCommentsServiceClass;
+    constructor() {
+        this.commentsRepo = new CommentsRepoClass()
+        this.likesForCommentsService = new LikesForCommentsServiceClass()
+    }
     async createComment(postId: string, userId: ObjectId, content: string): Promise<CommentViewType | null> {
         const foundUser = await usersQueryRepo.findUserById(userId)
         const foundPost = await postsQueryRepo.findPostById(postId, userId.toString())
@@ -23,14 +29,14 @@ class CommentsServiceClass {
                 dislikesCount: 0
             }
         )
-        return await commentsRepo.createComment(newComment)
+        return await this.commentsRepo.createComment(newComment)
     }
 
     async updateComment(commentId: string, userId: ObjectId, content: string): Promise<StatusType> {
         const foundComment = await commentsQueryRepo.findCommentById(commentId, userId.toString())
         if (!foundComment) return {status: "Not Found"}
         if (foundComment.commentatorInfo.userId === userId.toString()) {
-            await commentsRepo.updateComment(commentId, content)
+            await this.commentsRepo.updateComment(commentId, content)
             return {
                 status: "Updated",
                 code: 204,
@@ -51,8 +57,8 @@ class CommentsServiceClass {
             message: "Comment is not found"
         }
         if (foundComment.commentatorInfo.userId === userId.toString()) {
-            await commentsRepo.deleteComment(commentId)
-            await likesForCommentsService.deleteAllLikesWhenCommentIsDeleted(commentId)
+            await this.commentsRepo.deleteComment(commentId)
+            await this.likesForCommentsService.deleteAllLikesWhenCommentIsDeleted(commentId)
             return {
                 status: "Deleted",
                 code: 204,
@@ -112,16 +118,16 @@ class CommentsServiceClass {
                     break
             }
             if (!foundUserLike) {
-                await likesForCommentsService.createNewLike(commentId, activeUserId.toString(), inputLikeStatus)
-                await commentsRepo.updateLikesCounters(currentLikesCount, currentDislikesCount, commentId)
+                await this.likesForCommentsService.createNewLike(commentId, activeUserId.toString(), inputLikeStatus)
+                await this.commentsRepo.updateLikesCounters(currentLikesCount, currentDislikesCount, commentId)
                 return {
                     status: "No content",
                     code: 204,
                     message: "Like has been created"
                 }
             } else {
-                await likesForCommentsService.updateLikeStatus(commentId, activeUserId.toString(), inputLikeStatus)
-                await commentsRepo.updateLikesCounters(currentLikesCount, currentDislikesCount, commentId)
+                await this.likesForCommentsService.updateLikeStatus(commentId, activeUserId.toString(), inputLikeStatus)
+                await this.commentsRepo.updateLikesCounters(currentLikesCount, currentDislikesCount, commentId)
                 return {
                     status: "No content",
                     code: 204,
@@ -132,5 +138,3 @@ class CommentsServiceClass {
 
     }
 }
-
-export const commentsService = new CommentsServiceClass()

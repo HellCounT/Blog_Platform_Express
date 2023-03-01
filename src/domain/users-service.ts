@@ -1,14 +1,20 @@
 import bcrypt from 'bcrypt'
-import {usersRepo} from "../repositories/users-database";
+import {UsersRepoClass} from "../repositories/users-database";
 import {UserDbClass, UserDbType, UserViewType} from "../types/types";
 import {ObjectId, WithId} from "mongodb";
-import {emailManager} from "../managers/email-manager";
 import {v4 as uuidv4} from "uuid";
 import add from 'date-fns/add'
+import {EmailManagerClass} from "../managers/email-manager";
 
-class UsersServiceClass {
+export class UsersServiceClass {
+    private usersRepo: UsersRepoClass;
+    private emailManager: EmailManagerClass;
+    constructor() {
+        this.usersRepo = new UsersRepoClass()
+        this.emailManager = new EmailManagerClass()
+    }
     async registerUser(login: string, password: string, email: string): Promise<UserViewType | null> {
-        const passwordHash = await usersService._generateHash(password)
+        const passwordHash = await this._generateHash(password)
         const currentDate = new Date()
         const newUser = new UserDbClass(
             new ObjectId(),
@@ -28,18 +34,18 @@ class UsersServiceClass {
                 expirationDate: undefined
             }
         )
-        const createUserResult = await usersRepo.createUser(newUser)
+        const createUserResult = await this.usersRepo.createUser(newUser)
         try {
-            await emailManager.sendEmailRegistrationCode(newUser.accountData.email, newUser.emailConfirmationData.confirmationCode)
+            await this.emailManager.sendEmailRegistrationCode(newUser.accountData.email, newUser.emailConfirmationData.confirmationCode)
         } catch (error) {
             console.error(error)
-            await usersRepo.deleteUser(createUserResult.id)
+            await this.usersRepo.deleteUser(createUserResult.id)
             return null
         }
         return createUserResult
     }
     async createUser(login: string, password: string, email: string): Promise<UserViewType | null> {
-        const passwordHash = await usersService._generateHash(password)
+        const passwordHash = await this._generateHash(password)
         const currentDate = new Date()
         const newUser = new UserDbClass(
             new ObjectId(),
@@ -59,15 +65,15 @@ class UsersServiceClass {
                 expirationDate: undefined
             }
         )
-        if (await usersRepo.findByLoginOrEmail(login) ||
-            await usersRepo.findByLoginOrEmail(email)) return null
-        return await usersRepo.createUser(newUser)
+        if (await this.usersRepo.findByLoginOrEmail(login) ||
+            await this.usersRepo.findByLoginOrEmail(email)) return null
+        return await this.usersRepo.createUser(newUser)
     }
     async deleteUser(id: string): Promise<boolean | null> {
-        return await usersRepo.deleteUser(id)
+        return await this.usersRepo.deleteUser(id)
     }
     async checkCredentials(loginOrEmail: string, password: string): Promise<WithId<UserDbType> | null> {
-        const foundUser = await usersRepo.findByLoginOrEmail(loginOrEmail)
+        const foundUser = await this.usersRepo.findByLoginOrEmail(loginOrEmail)
         if (!foundUser) return null
         if (!foundUser.emailConfirmationData.isConfirmed) return null
         else {
@@ -77,21 +83,21 @@ class UsersServiceClass {
         }
     }
     async confirmUserEmail(code: string): Promise<boolean> {
-        const foundUser = await usersRepo.findByConfirmationCode(code)
+        const foundUser = await this.usersRepo.findByConfirmationCode(code)
         if (!foundUser) return false
         if (foundUser.emailConfirmationData.isConfirmed) return false
         if (foundUser.emailConfirmationData.confirmationCode !== code) return false
         if (new Date(foundUser.emailConfirmationData.expirationDate) < new Date()) return false
-        return await usersRepo.confirmationSetUser(foundUser._id.toString())
+        return await this.usersRepo.confirmationSetUser(foundUser._id.toString())
     }
     async resendActivationCode(email: string): Promise<boolean> {
-        const foundUser = await usersRepo.findByLoginOrEmail(email)
+        const foundUser = await this.usersRepo.findByLoginOrEmail(email)
         if (!foundUser) return false
         if (foundUser.emailConfirmationData.isConfirmed) return false
         const newCode = uuidv4()
-        await usersRepo.updateConfirmationCode(foundUser._id, newCode)
+        await this.usersRepo.updateConfirmationCode(foundUser._id, newCode)
         try {
-            await emailManager.resendEmailRegistrationCode(foundUser.accountData.email, newCode)
+            await this.emailManager.resendEmailRegistrationCode(foundUser.accountData.email, newCode)
             return true
         } catch (error) {
             console.error(error)
@@ -100,12 +106,12 @@ class UsersServiceClass {
     }
     async sendPasswordRecoveryCode(email: string) {
         const newCode = uuidv4()
-        const foundUser = await usersRepo.findByLoginOrEmail(email)
+        const foundUser = await this.usersRepo.findByLoginOrEmail(email)
         if (foundUser) {
-            await usersRepo.updateRecoveryCode(foundUser._id, newCode)
+            await this.usersRepo.updateRecoveryCode(foundUser._id, newCode)
         }
         try {
-            await emailManager.sendRecoveryCode(email, newCode)
+            await this.emailManager.sendRecoveryCode(email, newCode)
             return true
         } catch (error) {
             console.error(error)
@@ -113,11 +119,11 @@ class UsersServiceClass {
         }
     }
     async updatePasswordByRecoveryCode(recoveryCode: string, newPassword: string) {
-        const foundUser = await usersRepo.findByRecoveryCode(recoveryCode)
+        const foundUser = await this.usersRepo.findByRecoveryCode(recoveryCode)
         if (!foundUser) return false
         else {
-            const newPasswordHash = await usersService._generateHash(newPassword)
-            await usersRepo.updateHashByRecoveryCode(foundUser._id, newPasswordHash)
+            const newPasswordHash = await this._generateHash(newPassword)
+            await this.usersRepo.updateHashByRecoveryCode(foundUser._id, newPasswordHash)
             return true
         }
     }
@@ -126,5 +132,3 @@ class UsersServiceClass {
         return await bcrypt.hash(password, salt)
     }
 }
-
-export const usersService = new UsersServiceClass()

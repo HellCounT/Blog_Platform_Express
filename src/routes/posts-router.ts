@@ -6,17 +6,23 @@ import {
     commentDataValidator,
     paramIdInputValidation, likeInputValidator
 } from "../middleware/data-validation";
-import {postsService} from "../domain/posts-service";
-import {commentsQueryRepo, postsQueryRepo} from "../repositories/queryRepo";
 import {parseQueryPagination} from "../application/queryParsers";
 import {QueryParser} from "../types/types";
-import {commentsService} from "../domain/comments-service";
-import {authMiddleware, parseUserIdByToken} from "../middleware/auth-middleware";
+import {authMiddleware} from "../middleware/auth-middleware";
+import {PostServiceClass} from "../domain/posts-service";
+import {CommentsServiceClass} from "../domain/comments-service";
+import {commentsQueryRepo, postsQueryRepo} from "../repositories/queryRepo";
 
 
 export const postsRouter = Router({})
 
 class PostsControllerClass {
+    private postsService: PostServiceClass;
+    private commentsService: CommentsServiceClass;
+    constructor() {
+        this.postsService = new PostServiceClass()
+        this.commentsService = new CommentsServiceClass()
+    }
     async getAllPosts(req: Request, res: Response) {
         // query validation and parsing
         let queryParams: QueryParser = parseQueryPagination(req)
@@ -41,7 +47,7 @@ class PostsControllerClass {
     }
 
     async createPost(req: Request, res: Response) {
-        const postAddResult = await postsService.createPost(req.body.title, req.body.shortDescription, req.body.content, req.body.blogId)
+        const postAddResult = await this.postsService.createPost(req.body.title, req.body.shortDescription, req.body.content, req.body.blogId)
         if (postAddResult) {
             res.status(201).send(postAddResult)
         } else {
@@ -50,13 +56,13 @@ class PostsControllerClass {
     }
 
     async createComment(req: Request, res: Response) {
-        const createdComment = await commentsService.createComment(req.params.postId, req.user!._id, req.body.content)
+        const createdComment = await this.commentsService.createComment(req.params.postId, req.user!._id, req.body.content)
         if (createdComment) return res.status(201).send(createdComment)
         else res.status(400)
     }
 
     async updatePost(req: Request, res: Response) {
-        const flagUpdate = await postsService.updatePost(req.params.id, req.body.title, req.body.shortDescription, req.body.content, req.body.blogId)
+        const flagUpdate = await this.postsService.updatePost(req.params.id, req.body.title, req.body.shortDescription, req.body.content, req.body.blogId)
         if (flagUpdate) {
             res.sendStatus(204)
         } else {
@@ -65,7 +71,7 @@ class PostsControllerClass {
     }
 
     async deletePost(req: Request, res: Response) {
-        if (await postsService.deletePost(req.params.id)) {
+        if (await this.postsService.deletePost(req.params.id)) {
             res.sendStatus(204)
         } else {
             res.sendStatus(404)
@@ -73,7 +79,7 @@ class PostsControllerClass {
     }
 
     async updateLikeStatus(req: Request, res: Response) {
-        const result = await postsService.updateLikeStatus(req.params.postId, req.user?._id, req.user?.accountData.login, req.body.likeStatus)
+        const result = await this.postsService.updateLikeStatus(req.params.postId, req.user?._id, req.user?.accountData.login, req.body.likeStatus)
         if (result.status === 'No content') res.sendStatus(204)
         if (result.status === 'Not Found') res.sendStatus(404)
     }
@@ -82,20 +88,20 @@ class PostsControllerClass {
 const postController = new PostsControllerClass()
 
 postsRouter.get('/',
-    parseUserIdByToken,
-    postController.getAllPosts)
+    authMiddleware.parseUserIdByToken,
+    postController.getAllPosts.bind(postController))
 
 postsRouter.get('/:id',
-    parseUserIdByToken,
-    postController.getPostById)
+    authMiddleware.parseUserIdByToken,
+    postController.getPostById.bind(postController))
 
 postsRouter.get('/:postId/comments',
     //Input validation
     commentDataValidator.postIdParamCheck,
     paramIdInputValidation,
-    parseUserIdByToken,
+    authMiddleware.parseUserIdByToken,
     //Handlers
-    postController.getCommentsByPostId)
+    postController.getCommentsByPostId.bind(postController))
 
 postsRouter.post('/', basicAuth,
     //Input validation
@@ -105,15 +111,15 @@ postsRouter.post('/', basicAuth,
     postDataValidator.blogIdCheck,
     inputValidation,
     //Handlers
-    postController.createPost)
+    postController.createPost.bind(postController))
 
 postsRouter.post('/:postId/comments',
-    authMiddleware,
+    authMiddleware.checkCredentials,
     commentDataValidator.postIdParamCheck,
     paramIdInputValidation,
     commentDataValidator.contentCheck,
     inputValidation,
-    postController.createComment)
+    postController.createComment.bind(postController))
 
 postsRouter.put('/:id', basicAuth,
     //Input validation
@@ -123,12 +129,12 @@ postsRouter.put('/:id', basicAuth,
     postDataValidator.blogIdCheck,
     inputValidation,
     //Handlers
-    postController.updatePost)
+    postController.updatePost.bind(postController))
 
-postsRouter.delete('/:id', basicAuth, postController.deletePost)
+postsRouter.delete('/:id', basicAuth, postController.deletePost.bind(postController))
 
 postsRouter.put('/:postId/like-status',
-    authMiddleware,
+    authMiddleware.checkCredentials,
     likeInputValidator,
     inputValidation,
-    postController.updateLikeStatus)
+    postController.updateLikeStatus.bind(postController))

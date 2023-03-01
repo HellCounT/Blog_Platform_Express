@@ -1,10 +1,16 @@
-import {postsRepo} from "../repositories/posts-database";
 import {LikeStatus, PostDbClass, PostViewType, StatusType} from "../types/types";
 import {ObjectId} from "mongodb";
+import {PostsRepoClass} from "../repositories/posts-database";
+import {LikesForPostsServiceClass} from "./likes-service";
 import {blogsQueryRepo, postsQueryRepo} from "../repositories/queryRepo";
-import {likesForPostsService} from "./likes-service";
 
-class PostServiceClass {
+export class PostServiceClass {
+    private postsRepo: PostsRepoClass;
+    private likesForPostsService: LikesForPostsServiceClass;
+    constructor() {
+        this.postsRepo = new PostsRepoClass()
+        this.likesForPostsService = new LikesForPostsServiceClass()
+    }
     async createPost(postTitle: string, short: string, text: string, blogId: string): Promise<PostViewType | null> {
         const foundBlog = await blogsQueryRepo.findBlogById(blogId)
         if (!foundBlog) return null
@@ -21,20 +27,16 @@ class PostServiceClass {
                 dislikesCount: 0
             }
         )
-        return await postsRepo.createPost(newPost)
+        return await this.postsRepo.createPost(newPost)
     }
 
     async updatePost(inputId: string, postTitle: string, short: string, text: string, blogId: string): Promise<boolean | null> {
-        return await postsRepo.updatePost(inputId, postTitle, short, text, blogId)
+        return await this.postsRepo.updatePost(inputId, postTitle, short, text, blogId)
     }
 
     async deletePost(inputId: string): Promise<boolean | null> {
-        await likesForPostsService.deleteAllLikesWhenPostIsDeleted(inputId)
-        return await postsRepo.deletePost(inputId)
-    }
-
-    async updateBlogNameInAllRelatedPosts(blogId: string, blogName: string): Promise<void> {
-        return await postsRepo.updateBlogNameInAllRelatedPosts(blogId, blogName)
+        await this.likesForPostsService.deleteAllLikesWhenPostIsDeleted(inputId)
+        return await this.postsRepo.deletePost(inputId)
     }
 
     async updateLikeStatus(postId: string, activeUserId: ObjectId, activeUserLogin: string, inputLikeStatus: LikeStatus): Promise<StatusType> {
@@ -84,16 +86,16 @@ class PostServiceClass {
                     break
             }
             if (!foundUserLike) {
-                await likesForPostsService.createNewLike(postId, activeUserId.toString(), activeUserLogin, inputLikeStatus)
-                await postsRepo.updateLikesCounters(currentLikesCount, currentDislikesCount, postId)
+                await this.likesForPostsService.createNewLike(postId, activeUserId.toString(), activeUserLogin, inputLikeStatus)
+                await this.postsRepo.updateLikesCounters(currentLikesCount, currentDislikesCount, postId)
                 return {
                     status: "No content",
                     code: 204,
                     message: "Like has been created"
                 }
             } else {
-                await likesForPostsService.updateLikeStatus(postId, activeUserId.toString(), inputLikeStatus)
-                await postsRepo.updateLikesCounters(currentLikesCount, currentDislikesCount, postId)
+                await this.likesForPostsService.updateLikeStatus(postId, activeUserId.toString(), inputLikeStatus)
+                await this.postsRepo.updateLikesCounters(currentLikesCount, currentDislikesCount, postId)
                 return {
                     status: "No content",
                     code: 204,
@@ -103,5 +105,3 @@ class PostServiceClass {
         }
     }
 }
-
-export const postsService = new PostServiceClass()

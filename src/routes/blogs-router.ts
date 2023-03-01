@@ -6,16 +6,22 @@ import {
     inputValidation,
     postDataValidator
 } from "../middleware/data-validation";
-import {blogsService} from "../domain/blogs-service";
-import {blogsQueryRepo, postsQueryRepo} from "../repositories/queryRepo";
-import {postsService} from "../domain/posts-service";
 import {QueryParser} from "../types/types";
 import {parseQueryPagination} from "../application/queryParsers";
-import {parseUserIdByToken} from "../middleware/auth-middleware";
+import {BlogsServiceClass} from "../domain/blogs-service";
+import {authMiddleware} from "../middleware/auth-middleware";
+import {PostServiceClass} from "../domain/posts-service";
+import {blogsQueryRepo, postsQueryRepo} from "../repositories/queryRepo";
 
 export const blogsRouter = Router({})
 
 class BlogsControllerClass {
+    private blogsService: BlogsServiceClass;
+    private postsService: PostServiceClass;
+    constructor() {
+        this.blogsService = new BlogsServiceClass()
+        this.postsService = new PostServiceClass()
+    }
     async getAllBlogs(req: Request, res: Response) {
         // query validation and parsing
         let queryParams: QueryParser = parseQueryPagination(req)
@@ -43,12 +49,12 @@ class BlogsControllerClass {
 
     async createBlog(req: Request, res: Response) {
         // Blog adding
-        const blogAddResult = await blogsService.createBlog(req.body.name, req.body.description, req.body.websiteUrl)
+        const blogAddResult = await this.blogsService.createBlog(req.body.name, req.body.description, req.body.websiteUrl)
         return res.status(201).send(blogAddResult)
     }
 
     async createPostForBlogId(req: Request, res: Response) {
-        const postAddResult = await postsService.createPost(req.body.title, req.body.shortDescription, req.body.content, req.params.id)
+        const postAddResult = await this.postsService.createPost(req.body.title, req.body.shortDescription, req.body.content, req.params.id)
         if (postAddResult) {
             res.status(201).send(postAddResult)
         } else {
@@ -57,7 +63,7 @@ class BlogsControllerClass {
     }
 
     async updateBlog(req: Request, res: Response) {
-        const flagUpdate = await blogsService.updateBlog(req.params.id, req.body.name, req.body.description, req.body.websiteUrl)
+        const flagUpdate = await this.blogsService.updateBlog(req.params.id, req.body.name, req.body.description, req.body.websiteUrl)
         if (flagUpdate) {
             res.sendStatus(204)
         } else {
@@ -66,7 +72,7 @@ class BlogsControllerClass {
     }
 
     async deleteBlog(req: Request, res: Response) {
-        if (await blogsService.deleteBlog(req.params.id)) {
+        if (await this.blogsService.deleteBlog(req.params.id)) {
             res.sendStatus(204)
         } else {
             res.sendStatus(404)
@@ -77,17 +83,17 @@ class BlogsControllerClass {
 const blogsController = new BlogsControllerClass()
 
 
-blogsRouter.get('/', blogsController.getAllBlogs)
+blogsRouter.get('/', blogsController.getAllBlogs.bind(blogsController))
 
-blogsRouter.get('/:id', blogsController.getBlogById)
+blogsRouter.get('/:id', blogsController.getBlogById.bind(blogsController))
 
 blogsRouter.get('/:id/posts',
     //InputValidation
-    parseUserIdByToken,
+    authMiddleware.parseUserIdByToken,
     postDataValidator.blogIdParamCheck,
     paramIdInputValidation,
     //Handlers
-    blogsController.getPostsForBlogId)
+    blogsController.getPostsForBlogId.bind(blogsController))
 
 blogsRouter.post('/', basicAuth,
     //Input validation
@@ -96,7 +102,7 @@ blogsRouter.post('/', basicAuth,
     blogDataValidator.urlCheck,
     inputValidation,
     //Handlers
-    blogsController.createBlog)
+    blogsController.createBlog.bind(blogsController))
 
 blogsRouter.post('/:id/posts', basicAuth,
     //Input validation
@@ -107,7 +113,7 @@ blogsRouter.post('/:id/posts', basicAuth,
     postDataValidator.contentCheck,
     inputValidation,
     //Handlers
-    blogsController.createPostForBlogId)
+    blogsController.createPostForBlogId.bind(blogsController))
 
 blogsRouter.put('/:id', basicAuth,
     //Input validation
@@ -116,6 +122,6 @@ blogsRouter.put('/:id', basicAuth,
     blogDataValidator.urlCheck,
     inputValidation,
     //Handlers
-    blogsController.updateBlog)
+    blogsController.updateBlog.bind(blogsController))
 
-blogsRouter.delete('/:id', basicAuth, blogsController.deleteBlog)
+blogsRouter.delete('/:id', basicAuth, blogsController.deleteBlog.bind(blogsController))

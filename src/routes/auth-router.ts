@@ -1,11 +1,11 @@
 import {Request, Response, Router} from "express";
-import {usersService} from "../domain/users-service";
 import {inputValidation, userDataValidator} from "../middleware/data-validation";
-import {jwtService} from "../application/jwt-service";
-import {authMiddleware, refreshTokenCheck} from "../middleware/auth-middleware";
-import {usersQueryRepo} from "../repositories/queryRepo";
 import {rateLimiterMiddleware} from "../middleware/rate-limiter-middleware";
-import {devicesService} from "../domain/devices-service";
+import {UsersServiceClass} from "../domain/users-service";
+import {DevicesServiceClass} from "../domain/devices-service";
+import {authMiddleware} from "../middleware/auth-middleware";
+import {jwtService} from "../application/jwt-service";
+import {usersQueryRepo} from "../repositories/queryRepo";
 
 export const authRouter = Router({})
 
@@ -15,6 +15,12 @@ const refreshTokenCookieOptions = {
 }
 
 class AuthControllerClass {
+    private usersService: UsersServiceClass;
+    private devicesService: DevicesServiceClass;
+    constructor() {
+        this.usersService = new UsersServiceClass()
+        this.devicesService = new DevicesServiceClass()
+    }
     async getMyInfo(req: Request, res: Response) {
         const token = req.headers.authorization!.split(' ')[1]
         const result = await usersQueryRepo.getMyInfo(token)
@@ -22,7 +28,7 @@ class AuthControllerClass {
     }
 
     async login(req: Request, res: Response) {
-        const checkResult = await usersService.checkCredentials(req.body.loginOrEmail, req.body.password)
+        const checkResult = await this.usersService.checkCredentials(req.body.loginOrEmail, req.body.password)
         if (checkResult) {
             const ipAddress = req.ip
             const deviceName = req.headers["user-agent"]!
@@ -34,7 +40,7 @@ class AuthControllerClass {
 
     async logout(req: Request, res: Response) {
         await jwtService.addTokenToDb(req.user!._id, req.cookies.refreshToken)
-        await devicesService.logoutSession(req.cookies.refreshToken)
+        await this.devicesService.logoutSession(req.cookies.refreshToken)
         res.status(204).cookie('refreshToken', '', refreshTokenCookieOptions).send()
     }
 
@@ -48,31 +54,31 @@ class AuthControllerClass {
 
     async registerUser(req: Request, res: Response) {
         //User registration
-        const userRegResult = await usersService.registerUser(req.body.login, req.body.password, req.body.email)
+        const userRegResult = await this.usersService.registerUser(req.body.login, req.body.password, req.body.email)
         if (userRegResult) res.sendStatus(204)
     }
 
     async confirmUserEmail(req: Request, res: Response) {
-        const result = await usersService.confirmUserEmail(req.body.code)
+        const result = await this.usersService.confirmUserEmail(req.body.code)
         console.log(result)
         if (!result) res.sendStatus(400)
         else return res.sendStatus(204)
     }
 
     async resendActivationCode(req: Request, res: Response) {
-        const result = await usersService.resendActivationCode(req.body.email)
+        const result = await this.usersService.resendActivationCode(req.body.email)
         if (!result) res.sendStatus(400)
         else return res.sendStatus(204)
     }
 
     async passwordRecovery(req: Request, res: Response) {
-        const result = await usersService.sendPasswordRecoveryCode(req.body.email)
+        const result = await this.usersService.sendPasswordRecoveryCode(req.body.email)
         if (!result) res.sendStatus(400)
         else res.sendStatus(204)
     }
 
     async setNewPassword(req: Request, res: Response) {
-        const result = await usersService.updatePasswordByRecoveryCode(req.body.recoveryCode, req.body.newPassword)
+        const result = await this.usersService.updatePasswordByRecoveryCode(req.body.recoveryCode, req.body.newPassword)
         if (!result) {
             const errorsMessages = [{
                 message: "Incorrect recovery code",
@@ -86,22 +92,22 @@ class AuthControllerClass {
 
 const authController = new AuthControllerClass()
 
-authRouter.get('/me', authMiddleware, authController.getMyInfo)
+authRouter.get('/me', authMiddleware.checkCredentials, authController.getMyInfo.bind(authController))
 
 authRouter.post('/login',
     rateLimiterMiddleware(10, 5),
     userDataValidator.passwordCheck,
     userDataValidator.loginOrEmailCheck,
     inputValidation,
-    authController.login)
+    authController.login.bind(authController))
 
 authRouter.post('/logout',
-    refreshTokenCheck,
-    authController.logout)
+    authMiddleware.refreshTokenCheck,
+    authController.logout.bind(authController))
 
 authRouter.post('/refresh-token',
-    refreshTokenCheck,
-    authController.updateRefreshToken)
+    authMiddleware.refreshTokenCheck,
+    authController.updateRefreshToken.bind(authController))
 
 authRouter.post('/registration',
     //Input validation
@@ -113,28 +119,28 @@ authRouter.post('/registration',
     userDataValidator.userExistsCheckLogin,
     inputValidation,
     //Handlers
-    authController.registerUser)
+    authController.registerUser.bind(authController))
 
 authRouter.post('/registration-confirmation',
     rateLimiterMiddleware(10, 5),
     userDataValidator.codeCheck,
     inputValidation,
-    authController.confirmUserEmail)
+    authController.confirmUserEmail.bind(authController))
 
 authRouter.post('/registration-email-resending',
     rateLimiterMiddleware(10, 5),
     userDataValidator.userEmailCheck,
     inputValidation,
-    authController.resendActivationCode)
+    authController.resendActivationCode.bind(authController))
 
 authRouter.post('/password-recovery',
     rateLimiterMiddleware(10, 5),
     userDataValidator.emailCheck,
     inputValidation,
-    authController.passwordRecovery)
+    authController.passwordRecovery.bind(authController))
 
 authRouter.post('/new-password',
     rateLimiterMiddleware(10, 5),
     userDataValidator.newPasswordCheck,
     inputValidation,
-    authController.setNewPassword)
+    authController.setNewPassword.bind(authController))

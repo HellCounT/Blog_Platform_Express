@@ -2,7 +2,7 @@ import {ObjectId} from "mongodb";
 import {LikeStatus, PostDbType, PostViewType} from "../types/types";
 import {BlogModelClass, PostModelClass} from "./db";
 
-class PostsRepoClass {
+export class PostsRepoClass {
     async createPost(newPost: PostDbType): Promise<PostViewType | null> {
             const postInstance = new PostModelClass(newPost)
             const saveResult = await postInstance.save()
@@ -45,12 +45,6 @@ class PostsRepoClass {
             return true
         } else return null
     }
-    async updateBlogNameInAllRelatedPosts(blogId: string, blogName: string): Promise<void> {
-        await PostModelClass.updateMany({blogId: blogId}, {$set:
-                {
-                    blogName: blogName
-                }})
-    }
     async updateLikesCounters(newLikesCount: number, newDislikesCount: number, postId: string) {
         const postInstance = await PostModelClass.findOne({_id: new ObjectId(postId)})
         if (postInstance) {
@@ -61,5 +55,3 @@ class PostsRepoClass {
         } else return
     }
 }
-
-export const postsRepo = new PostsRepoClass()

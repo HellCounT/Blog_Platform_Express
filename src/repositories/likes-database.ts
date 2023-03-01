@@ -1,7 +1,7 @@
 import {CommentLikeDbType, LikeStatus, PostLikeDbType} from "../types/types";
 import {LikeInCommentModelClass, LikeInPostModelClass} from "./db";
 
-class LikesForCommentsRepoClass {
+export class LikesForCommentsRepoClass {
     async createNewLike(newLike: CommentLikeDbType): Promise<void> {
         const likeInCommentInstance = new LikeInCommentModelClass(newLike)
         await likeInCommentInstance.save()
@@ -23,7 +23,7 @@ class LikesForCommentsRepoClass {
         return
     }
 }
-class LikesForPostsRepoClass {
+export class LikesForPostsRepoClass {
     async createNewLike(newLike: PostLikeDbType): Promise<void> {
         const likeInPostInstance = new LikeInPostModelClass(newLike)
         await likeInPostInstance.save()
@@ -45,6 +45,3 @@ class LikesForPostsRepoClass {
         return
     }
 }
-
-export const likesForCommentsRepo = new LikesForCommentsRepoClass()
-export const likesForPostsRepo = new LikesForPostsRepoClass()
