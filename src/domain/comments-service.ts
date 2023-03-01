@@ -5,11 +5,8 @@ import {LikesForCommentsServiceClass} from "./likes-service";
 import {commentsQueryRepo, postsQueryRepo, usersQueryRepo} from "../repositories/queryRepo";
 
 export class CommentsServiceClass {
-    private commentsRepo: CommentsRepoClass;
-    private likesForCommentsService: LikesForCommentsServiceClass;
-    constructor() {
-        this.commentsRepo = new CommentsRepoClass()
-        this.likesForCommentsService = new LikesForCommentsServiceClass()
+    constructor(protected commentsRepo: CommentsRepoClass,
+                protected likesForCommentsService: LikesForCommentsServiceClass) {
     }
     async createComment(postId: string, userId: ObjectId, content: string): Promise<CommentViewType | null> {
         const foundUser = await usersQueryRepo.findUserById(userId)

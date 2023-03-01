@@ -1,6 +1,6 @@
 import {transport} from "../adapters/email-adapter";
 
-export class EmailManagerClass {
+export const emailManager = {
     async sendEmailRegistrationCode(email: string, code: string) {
         await transport.sendMail({
             from: 'Blog Platform <hellcount.test@gmail.com>',
@@ -11,7 +11,7 @@ export class EmailManagerClass {
                 `          <a href='https://somesite.com/confirm-email?code=${code}'>complete registration</a>\n` +
                 "      </p>"
         })
-    }
+    },
     async resendEmailRegistrationCode(email: string, code: string) {
         await transport.sendMail({
             from: 'Blog Platform <hellcount.test@gmail.com>',
@@ -22,7 +22,7 @@ export class EmailManagerClass {
                 `          <a href='https://somesite.com/confirm-email?code=${code}'>complete registration</a>\n` +
                 "      </p>"
         })
-    }
+    },
     async sendRecoveryCode(email: string, code: string) {
         await transport.sendMail({
             from: 'Blog Platform <hellcount.test@gmail.com>',

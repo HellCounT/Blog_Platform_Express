@@ -3,9 +3,7 @@ import {ObjectId} from "mongodb";
 import {LikesForCommentsRepoClass, LikesForPostsRepoClass} from "../repositories/likes-database";
 
 export class LikesForCommentsServiceClass {
-    private likesForCommentsRepo: LikesForCommentsRepoClass;
-    constructor() {
-        this.likesForCommentsRepo = new LikesForCommentsRepoClass()
+    constructor(protected likesForCommentsRepo: LikesForCommentsRepoClass) {
     }
     async createNewLike(commentId: string, userId: string, likeStatus: LikeStatus): Promise<void> {
         const newLike = new CommentLikeDbClass(
@@ -27,9 +25,7 @@ export class LikesForCommentsServiceClass {
     }
 }
 export class LikesForPostsServiceClass {
-    private likesForPostsRepo: LikesForPostsRepoClass;
-    constructor() {
-        this.likesForPostsRepo = new LikesForPostsRepoClass()
+    constructor(protected likesForPostsRepo: LikesForPostsRepoClass) {
     }
     async createNewLike(postId: string, userId: string, userLogin: string, likeStatus: LikeStatus): Promise<void> {
         const newLike = new PostLikeDbClass(

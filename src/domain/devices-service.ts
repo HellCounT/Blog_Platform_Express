@@ -1,13 +1,11 @@
 import {ObjectId} from "mongodb";
 import {ActiveSessionDbClass, StatusType} from "../types/types";
 import {DevicesRepoClass} from "../repositories/devices-database";
-import {jwtService} from "../application/jwt-service";
 import {usersQueryRepo} from "../repositories/queryRepo";
+import {jwtService} from "../composition-root";
 
 export class DevicesServiceClass {
-    private devicesRepo: DevicesRepoClass;
-    constructor() {
-        this.devicesRepo = new DevicesRepoClass()
+    constructor(protected devicesRepo: DevicesRepoClass) {
     }
     async deleteSession(refreshToken: string, userId: ObjectId, deviceId: string): Promise<StatusType> {
         const foundSession = await usersQueryRepo.findSessionByDeviceId(new ObjectId(deviceId))

@@ -5,11 +5,8 @@ import {LikesForPostsServiceClass} from "./likes-service";
 import {blogsQueryRepo, postsQueryRepo} from "../repositories/queryRepo";
 
 export class PostServiceClass {
-    private postsRepo: PostsRepoClass;
-    private likesForPostsService: LikesForPostsServiceClass;
-    constructor() {
-        this.postsRepo = new PostsRepoClass()
-        this.likesForPostsService = new LikesForPostsServiceClass()
+    constructor(protected postsRepo: PostsRepoClass,
+                protected likesForPostsService: LikesForPostsServiceClass) {
     }
     async createPost(postTitle: string, short: string, text: string, blogId: string): Promise<PostViewType | null> {
         const foundBlog = await blogsQueryRepo.findBlogById(blogId)

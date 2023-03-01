@@ -3,9 +3,7 @@ import {ObjectId} from "mongodb";
 import {BlogsRepoClass} from "../repositories/blogs-database";
 
 export class BlogsServiceClass {
-    private blogsRepo: BlogsRepoClass;
-    constructor() {
-        this.blogsRepo = new BlogsRepoClass()
+    constructor(protected blogsRepo: BlogsRepoClass) {
     }
     async createBlog(title: string, desc: string, website: string): Promise<BlogViewType> {
         const newBlog = new BlogDbClass(

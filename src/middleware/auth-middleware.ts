@@ -1,8 +1,8 @@
 import {NextFunction, Request, Response} from "express";
 import {settings} from "../settings";
 import {ExpiredTokensRepoClass} from "../repositories/expired-tokens-database";
-import {jwtService} from "../application/jwt-service";
 import {usersQueryRepo} from "../repositories/queryRepo";
+import {jwtService} from "../composition-root";
 
 class AuthMiddlewareClass {
     private expiredTokensRepo: ExpiredTokensRepoClass;

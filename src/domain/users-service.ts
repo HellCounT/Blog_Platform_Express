@@ -4,14 +4,10 @@ import {UserDbClass, UserDbType, UserViewType} from "../types/types";
 import {ObjectId, WithId} from "mongodb";
 import {v4 as uuidv4} from "uuid";
 import add from 'date-fns/add'
-import {EmailManagerClass} from "../managers/email-manager";
+import {emailManager} from "../managers/email-manager";
 
 export class UsersServiceClass {
-    private usersRepo: UsersRepoClass;
-    private emailManager: EmailManagerClass;
-    constructor() {
-        this.usersRepo = new UsersRepoClass()
-        this.emailManager = new EmailManagerClass()
+    constructor(protected usersRepo: UsersRepoClass) {
     }
     async registerUser(login: string, password: string, email: string): Promise<UserViewType | null> {
         const passwordHash = await this._generateHash(password)
@@ -36,7 +32,7 @@ export class UsersServiceClass {
         )
         const createUserResult = await this.usersRepo.createUser(newUser)
         try {
-            await this.emailManager.sendEmailRegistrationCode(newUser.accountData.email, newUser.emailConfirmationData.confirmationCode)
+            await emailManager.sendEmailRegistrationCode(newUser.accountData.email, newUser.emailConfirmationData.confirmationCode)
         } catch (error) {
             console.error(error)
             await this.usersRepo.deleteUser(createUserResult.id)
@@ -97,7 +93,7 @@ export class UsersServiceClass {
         const newCode = uuidv4()
         await this.usersRepo.updateConfirmationCode(foundUser._id, newCode)
         try {
-            await this.emailManager.resendEmailRegistrationCode(foundUser.accountData.email, newCode)
+            await emailManager.resendEmailRegistrationCode(foundUser.accountData.email, newCode)
             return true
         } catch (error) {
             console.error(error)
@@ -111,7 +107,7 @@ export class UsersServiceClass {
             await this.usersRepo.updateRecoveryCode(foundUser._id, newCode)
         }
         try {
-            await this.emailManager.sendRecoveryCode(email, newCode)
+            await emailManager.sendRecoveryCode(email, newCode)
             return true
         } catch (error) {
             console.error(error)

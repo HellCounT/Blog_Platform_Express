@@ -5,12 +5,9 @@ import {settings} from "../settings";
 import {DevicesServiceClass} from "../domain/devices-service";
 import {ExpiredTokensRepoClass} from "../repositories/expired-tokens-database";
 
-class JwtServiceClass {
-    private devicesService: DevicesServiceClass;
-    private expiredTokensRepo: ExpiredTokensRepoClass;
-    constructor() {
-        this.devicesService = new DevicesServiceClass()
-        this.expiredTokensRepo = new ExpiredTokensRepoClass()
+export class JwtServiceClass {
+    constructor(protected devicesService: DevicesServiceClass,
+                protected expiredTokensRepo: ExpiredTokensRepoClass) {
     }
     createJwt(user: WithId<UserDbType>): string {
         return jwt.sign({userId: user._id}, settings.JWT_SECRET, {expiresIn: 600})
@@ -63,5 +60,3 @@ class JwtServiceClass {
         }
     }
 }
-
-export const jwtService = new JwtServiceClass()

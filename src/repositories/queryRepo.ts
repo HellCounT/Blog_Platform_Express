@@ -30,7 +30,7 @@ import {
     PostModelClass,
     UserModelClass
 } from "./db";
-import {jwtService} from "../application/jwt-service";
+import {jwtService} from "../composition-root";
 
 export const blogsQueryRepo = {
     async viewAllBlogs(q: QueryParser): Promise<BlogPaginatorType> {
