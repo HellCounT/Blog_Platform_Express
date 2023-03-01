@@ -1,15 +1,15 @@
 import jwt from 'jsonwebtoken'
 import {ObjectId, WithId} from "mongodb";
-import {UserInsertDbType} from "../types/types";
+import {UserDbType} from "../types/types";
 import {settings} from "../settings";
 import {expiredTokensRepo} from "../repositories/expired-tokens-database";
 import {devicesService} from "../domain/devices-service";
 
 export const jwtService = {
-    createJwt(user: WithId<UserInsertDbType>): string {
+    createJwt(user: WithId<UserDbType>): string {
         return jwt.sign({userId: user._id}, settings.JWT_SECRET, {expiresIn: 600})
     },
-    async createRefreshJwt(user: WithId<UserInsertDbType>, ip: string, deviceName: string): Promise<string> {
+    async createRefreshJwt(user: WithId<UserDbType>, ip: string, deviceName: string): Promise<string> {
         const deviceId = new ObjectId()
         const issueDate = new Date()
         const expDateSec = Math.floor( issueDate.getTime() / 1000) + 20*60
@@ -22,7 +22,7 @@ export const jwtService = {
         await devicesService.startNewSession(refreshToken, user._id, deviceId, deviceName, ip, issueDate, expDate)
         return refreshToken
     },
-    async updateRefreshJwt(user: WithId<UserInsertDbType>, refreshToken: string): Promise<string> {
+    async updateRefreshJwt(user: WithId<UserDbType>, refreshToken: string): Promise<string> {
         const oldRefreshToken: any = jwt.verify(refreshToken, settings.JWT_REFRESH_SECRET)
         await expiredTokensRepo.addTokenToDb(refreshToken, user._id)
         const issueDate = new Date()
@@ -44,7 +44,7 @@ export const jwtService = {
             return null
         }
     },
-    async addTokenToDb(user: WithId<UserInsertDbType>, refreshToken: string): Promise<void> {
+    async addTokenToDb(user: WithId<UserDbType>, refreshToken: string): Promise<void> {
         await expiredTokensRepo.addTokenToDb(refreshToken, user._id)
         return
     },

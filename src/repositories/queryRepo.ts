@@ -4,8 +4,8 @@ import {
     BlogDbType,
     BlogPaginatorType,
     BlogViewType,
-    CommentInsertDbType,
-    CommentLikeInsertDbType,
+    CommentDbType,
+    CommentLikeDbType,
     CommentPaginatorType,
     CommentViewType,
     DeviceViewType,
@@ -15,7 +15,7 @@ import {
     PostPaginatorType,
     PostViewType,
     QueryParser,
-    UserInsertDbType,
+    UserDbType,
     UserPaginatorType,
     UserQueryParser,
     UserViewType
@@ -194,13 +194,13 @@ class CommentsQueryRepoClass {
             else return null
         }
     }
-    async getUserLikeForComment(userId: string, commentId: string): Promise<WithId<CommentLikeInsertDbType> | null> {
+    async getUserLikeForComment(userId: string, commentId: string): Promise<WithId<CommentLikeDbType> | null> {
         return LikeInCommentModelClass.findOne({
             "commentId": commentId,
             "userId": userId
         })
     }
-    async _mapCommentToViewType(comment: WithId<CommentInsertDbType>, activeUserId: string): Promise<CommentViewType> {
+    async _mapCommentToViewType(comment: WithId<CommentDbType>, activeUserId: string): Promise<CommentViewType> {
         const like = await this.getUserLikeForComment(activeUserId, comment._id.toString())
         return {
             id: comment._id.toString(),
@@ -254,7 +254,7 @@ class UsersQueryRepoClass {
             items: pageUsers
         }
     }
-    _mapUserToViewType(user: WithId<UserInsertDbType>): UserViewType {
+    _mapUserToViewType(user: WithId<UserDbType>): UserViewType {
         return {
             id: user._id.toString(),
             login: user.accountData.login,
@@ -262,7 +262,7 @@ class UsersQueryRepoClass {
             createdAt: user.accountData.createdAt
         }
     }
-    async findUserById(userId: ObjectId): Promise<WithId<UserInsertDbType> | null> {
+    async findUserById(userId: ObjectId): Promise<UserDbType | null> {
         return UserModelClass.findOne({_id: {$eq: userId}})
     }
     async getMyInfo(token: string): Promise<MeViewType | null> {

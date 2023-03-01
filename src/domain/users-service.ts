@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import {usersRepo} from "../repositories/users-database";
-import {UserCreateType, UserInsertDbType, UserViewType} from "../types/types";
-import {WithId} from "mongodb";
+import {UserDbClass, UserDbType, UserViewType} from "../types/types";
+import {ObjectId, WithId} from "mongodb";
 import {emailManager} from "../managers/email-manager";
 import {v4 as uuidv4} from "uuid";
 import add from 'date-fns/add'
@@ -10,18 +10,27 @@ class UsersServiceClass {
     async registerUser(login: string, password: string, email: string): Promise<UserViewType | null> {
         const passwordHash = await usersService._generateHash(password)
         const currentDate = new Date()
-        const newUser: UserCreateType = {
-            login: login,
-            password: password,
-            email: email,
-            createdAt: currentDate.toISOString(),
-            confirmationCode: uuidv4(),
-            expirationDate: add(currentDate, {hours: 1}).toISOString(),
-            isConfirmed: false
-        }
-        const createUserResult = await usersRepo.createUser(newUser, passwordHash)
+        const newUser = new UserDbClass(
+            new ObjectId(),
+            {
+                login: login,
+                email: email,
+                hash: passwordHash,
+                createdAt: currentDate.toISOString()
+            },
+            {
+                confirmationCode: uuidv4(),
+                expirationDate: add(currentDate, {hours: 1}).toISOString(),
+                isConfirmed: false
+            },
+            {
+                recoveryCode: undefined,
+                expirationDate: undefined
+            }
+        )
+        const createUserResult = await usersRepo.createUser(newUser)
         try {
-            await emailManager.sendEmailRegistrationCode(newUser.email, newUser.confirmationCode)
+            await emailManager.sendEmailRegistrationCode(newUser.accountData.email, newUser.emailConfirmationData.confirmationCode)
         } catch (error) {
             console.error(error)
             await usersRepo.deleteUser(createUserResult.id)
@@ -32,23 +41,32 @@ class UsersServiceClass {
     async createUser(login: string, password: string, email: string): Promise<UserViewType | null> {
         const passwordHash = await usersService._generateHash(password)
         const currentDate = new Date()
-        const newUser: UserCreateType = {
-            login: login,
-            password: password,
-            email: email,
-            createdAt: currentDate.toISOString(),
-            confirmationCode: "User Created by SuperAdmin",
-            expirationDate: "User Created by SuperAdmin",
-            isConfirmed: true
-        }
+        const newUser = new UserDbClass(
+            new ObjectId(),
+            {
+                login: login,
+                email: email,
+                hash: passwordHash,
+                createdAt: currentDate.toISOString()
+            },
+            {
+                confirmationCode: "User Created by SuperAdmin",
+                expirationDate: "User Created by SuperAdmin",
+                isConfirmed: true
+            },
+            {
+                recoveryCode: undefined,
+                expirationDate: undefined
+            }
+        )
         if (await usersRepo.findByLoginOrEmail(login) ||
             await usersRepo.findByLoginOrEmail(email)) return null
-        return await usersRepo.createUser(newUser, passwordHash)
+        return await usersRepo.createUser(newUser)
     }
     async deleteUser(id: string): Promise<boolean | null> {
         return await usersRepo.deleteUser(id)
     }
-    async checkCredentials(loginOrEmail: string, password: string): Promise<WithId<UserInsertDbType> | null> {
+    async checkCredentials(loginOrEmail: string, password: string): Promise<WithId<UserDbType> | null> {
         const foundUser = await usersRepo.findByLoginOrEmail(loginOrEmail)
         if (!foundUser) return null
         if (!foundUser.emailConfirmationData.isConfirmed) return null

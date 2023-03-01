@@ -1,7 +1,7 @@
 import {ObjectId} from "mongodb";
 import {devicesRepo} from "../repositories/devices-database";
 import {jwtService} from "../application/jwt-service";
-import {StatusType} from "../types/types";
+import {ActiveSessionDbClass, StatusType} from "../types/types";
 import {usersQueryRepo} from "../repositories/queryRepo";
 
 class DevicesServiceClass {
@@ -58,7 +58,16 @@ class DevicesServiceClass {
                           deviceId: ObjectId, deviceName: string,
                           ip: string, issueDate: Date, expDate: Date): Promise<void> {
         const refreshTokenMeta = this._createMeta(refreshToken)
-        await devicesRepo.addSessionToDb(refreshTokenMeta, deviceId, userId, ip, deviceName, issueDate, expDate)
+        const newSession = new ActiveSessionDbClass(
+            deviceId,
+            userId,
+            ip,
+            deviceName,
+            issueDate,
+            expDate,
+            refreshTokenMeta
+        )
+        await devicesRepo.addSessionToDb(newSession)
     }
     async updateSessionWithDeviceId(newRefreshToken: string, deviceId: string,
                                     issueDate: Date, expDate: Date) {

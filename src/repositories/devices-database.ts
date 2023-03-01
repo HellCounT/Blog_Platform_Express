@@ -1,20 +1,9 @@
-import {ActiveSessionDbType} from "../types/types";
+import {ActiveSessionDbClass} from "../types/types";
 import {ObjectId} from "mongodb";
 import {ActiveSessionModelClass} from "./db";
 
 class DevicesRepoClass {
-    async addSessionToDb(refreshTokenMeta: string, deviceId: ObjectId,
-                         userId: ObjectId, ip: string, deviceName: string,
-                         issueDate: Date, expDate: Date): Promise<void> {
-        const newSession: ActiveSessionDbType = {
-            _id: deviceId,
-            userId: userId,
-            ip: ip,
-            deviceName: deviceName,
-            issuedAt: issueDate,
-            expirationDate: expDate,
-            refreshTokenMeta: refreshTokenMeta
-        }
+    async addSessionToDb(newSession: ActiveSessionDbClass): Promise<void> {
         const activeSessionInstance = new ActiveSessionModelClass(newSession)
         await activeSessionInstance.save()
         return

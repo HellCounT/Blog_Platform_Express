@@ -1,13 +1,15 @@
-import {CommentLikeInsertDbType, LikeStatus, PostLikeInsertDbType} from "../types/types";
+import {CommentLikeDbClass, LikeStatus, PostLikeDbClass} from "../types/types";
 import {likesForCommentsRepo, likesForPostsRepo} from "../repositories/likes-database";
+import {ObjectId} from "mongodb";
 
 class LikesForCommentsServiceClass {
     async createNewLike(commentId: string, userId: string, likeStatus: LikeStatus): Promise<void> {
-        const newLike: CommentLikeInsertDbType = {
-            commentId: commentId,
-            userId: userId,
-            likeStatus: likeStatus
-        }
+        const newLike = new CommentLikeDbClass(
+            new ObjectId(),
+            commentId,
+            userId,
+            likeStatus
+        )
         await likesForCommentsRepo.createNewLike(newLike)
         return
     }
@@ -22,13 +24,14 @@ class LikesForCommentsServiceClass {
 }
 class LikesForPostsServiceClass {
     async createNewLike(postId: string, userId: string, userLogin: string, likeStatus: LikeStatus): Promise<void> {
-        const newLike: PostLikeInsertDbType = {
-            postId: postId,
-            userId: userId,
-            userLogin: userLogin,
-            addedAt: new Date(),
-            likeStatus: likeStatus
-        }
+        const newLike = new PostLikeDbClass(
+            new ObjectId(),
+            postId,
+            userId,
+            userLogin,
+            new Date(),
+            likeStatus
+        )
         await likesForPostsRepo.createNewLike(newLike)
         return
     }

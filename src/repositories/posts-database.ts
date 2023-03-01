@@ -1,41 +1,26 @@
 import {ObjectId} from "mongodb";
-import {LikeStatus, PostCreateType, PostViewType} from "../types/types";
+import {LikeStatus, PostDbType, PostViewType} from "../types/types";
 import {BlogModelClass, PostModelClass} from "./db";
 
 class PostsRepoClass {
-    async createPost(newPost: PostCreateType): Promise<PostViewType | null> {
-        const foundBlog = await BlogModelClass.findOne({_id: new ObjectId(newPost.blogId)})
-        if (foundBlog) {
-            const mappedPost = {
-                title: newPost.title,
-                shortDescription: newPost.shortDescription,
-                content: newPost.content,
-                blogId: newPost.blogId,
-                blogName: foundBlog.name,
-                createdAt: newPost.createdAt,
-                likesInfo: {
-                    likesCount: 0,
-                    dislikesCount: 0
-                }
-            }
-            const postInstance = new PostModelClass(mappedPost)
+    async createPost(newPost: PostDbType): Promise<PostViewType | null> {
+            const postInstance = new PostModelClass(newPost)
             const saveResult = await postInstance.save()
             return {
                 id: saveResult._id.toString(),
-                title: mappedPost.title,
-                shortDescription: mappedPost.shortDescription,
-                content: mappedPost.content,
-                blogId: mappedPost.blogId,
-                blogName: mappedPost.blogName,
-                createdAt: mappedPost.createdAt.toISOString(),
+                title: saveResult.title,
+                shortDescription: saveResult.shortDescription,
+                content: saveResult.content,
+                blogId: saveResult.blogId,
+                blogName: saveResult.blogName,
+                createdAt: saveResult.createdAt.toISOString(),
                 extendedLikesInfo: {
-                    likesCount: mappedPost.likesInfo.likesCount,
-                    dislikesCount: mappedPost.likesInfo.dislikesCount,
+                    likesCount: saveResult.likesInfo.likesCount,
+                    dislikesCount: saveResult.likesInfo.dislikesCount,
                     myStatus: LikeStatus.none,
                     newestLikes: []
                 }
             }
-        } else return null
     }
     async updatePost(inputId: string, postTitle: string, short: string, text: string, blogId: string): Promise<boolean | null> {
         const foundBlog = await BlogModelClass.findOne({_id: new ObjectId(blogId)})

@@ -1,5 +1,5 @@
 import {ObjectId, WithId} from "mongodb";
-import {UserCreateType, UserInsertDbType, UserViewType} from "../types/types";
+import {UserDbType, UserViewType} from "../types/types";
 import {UserModelClass} from "./db";
 
 class UsersRepoClass {
@@ -9,34 +9,17 @@ class UsersRepoClass {
                 {'accountData.login': loginOrEmail}]
         }).lean()
     }
-    async findByConfirmationCode(emailConfirmationCode: string): Promise<WithId<UserInsertDbType> | null> {
+    async findByConfirmationCode(emailConfirmationCode: string): Promise<WithId<UserDbType> | null> {
         return UserModelClass.findOne(
             {'emailConfirmationData.confirmationCode': emailConfirmationCode})
     }
-    async findByRecoveryCode(recoveryCode: string): Promise<WithId<UserInsertDbType> | null> {
+    async findByRecoveryCode(recoveryCode: string): Promise<WithId<UserDbType> | null> {
         return UserModelClass.findOne(
             {'recoveryCodeData.recoveryCode': recoveryCode}
         )
     }
-    async createUser(newUser: UserCreateType, hash: string): Promise<UserViewType> {
-        const insertDbUser: UserInsertDbType = {
-            accountData: {
-                login: newUser.login,
-                email: newUser.email,
-                hash: hash,
-                createdAt: newUser.createdAt
-            },
-            emailConfirmationData: {
-                confirmationCode: newUser.confirmationCode,
-                expirationDate: newUser.expirationDate,
-                isConfirmed: newUser.isConfirmed
-            },
-            recoveryCodeData: {
-                recoveryCode: undefined,
-                expirationDate: undefined
-            }
-        }
-        const userInstance = new UserModelClass(insertDbUser)
+    async createUser(newUser: UserDbType): Promise<UserViewType> {
+        const userInstance = new UserModelClass(newUser)
         const result = await userInstance.save()
         return {
             id: result._id.toString(),

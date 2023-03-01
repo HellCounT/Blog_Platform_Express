@@ -1,19 +1,31 @@
 import {commentsRepo} from "../repositories/comments-database";
-import {CommentCreateType, LikeStatus, StatusType} from "../types/types";
+import {CommentDbClass, CommentViewType, LikeStatus, StatusType} from "../types/types";
 import {ObjectId} from "mongodb";
-import {commentsQueryRepo} from "../repositories/queryRepo";
+import {commentsQueryRepo, postsQueryRepo, usersQueryRepo} from "../repositories/queryRepo";
 import {likesForCommentsService} from "./likes-service";
 
 class CommentsServiceClass {
-    async createComment(postId: string, userId: ObjectId, content: string) {
-        const newComment: CommentCreateType = {
-            content: content,
-            userId: userId.toString(),
-            postId: postId,
-            createdAt: new Date().toISOString()
-        }
+    async createComment(postId: string, userId: ObjectId, content: string): Promise<CommentViewType | null> {
+        const foundUser = await usersQueryRepo.findUserById(userId)
+        const foundPost = await postsQueryRepo.findPostById(postId, userId.toString())
+        if (!foundUser || !foundPost) return null
+        const newComment = new CommentDbClass(
+            new ObjectId(),
+            content,
+            {
+                userId: userId.toString(),
+                userLogin: foundUser.accountData.login,
+            },
+            postId,
+            new Date().toISOString(),
+            {
+                likesCount: 0,
+                dislikesCount: 0
+            }
+        )
         return await commentsRepo.createComment(newComment)
     }
+
     async updateComment(commentId: string, userId: ObjectId, content: string): Promise<StatusType> {
         const foundComment = await commentsQueryRepo.findCommentById(commentId, userId.toString())
         if (!foundComment) return {status: "Not Found"}
@@ -30,6 +42,7 @@ class CommentsServiceClass {
             message: "User is not allowed to edit other user's comment"
         }
     }
+
     async deleteComment(commentId: string, userId: ObjectId): Promise<StatusType> {
         const foundComment = await commentsQueryRepo.findCommentById(commentId, userId.toString())
         if (!foundComment) return {
@@ -51,6 +64,7 @@ class CommentsServiceClass {
             message: "User is not allowed to delete other user's comment"
         }
     }
+
     async updateLikeStatus(commentId: string, activeUserId: ObjectId, inputLikeStatus: LikeStatus): Promise<StatusType> {
         const foundComment = await commentsQueryRepo.findCommentById(commentId, activeUserId.toString())
         if (!foundComment) {

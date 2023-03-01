@@ -1,10 +1,9 @@
 import dotenv from "dotenv"
 import {
     ActiveSessionDbType,
-    Blog,
-    CommentInsertDbType,
-    ExpiredTokenInsertDbType, CommentLikeInsertDbType,
-    UserInsertDbType, PostLikeInsertDbType, PostDbType, LikeStatus
+    CommentDbType,
+    ExpiredTokenInsertDbType, CommentLikeDbType,
+    UserDbType, PostLikeDbType, PostDbType, LikeStatus, BlogDbType
 } from "../types/types"
 import {settings} from "../settings"
 import mongoose from "mongoose"
@@ -31,13 +30,13 @@ const PostSchema = new mongoose.Schema<PostDbType>({
         dislikesCount: {type: Number, required: true}
     }
 })
-const BlogSchema = new mongoose.Schema<Blog>({
+const BlogSchema = new mongoose.Schema<BlogDbType>({
     name: {type: String, required: true},
     description: {type: String, required: true},
     websiteUrl: {type: String, required: true},
     createdAt: {type: String, required: true},
 })
-const UserSchema = new mongoose.Schema<UserInsertDbType>({
+const UserSchema = new mongoose.Schema<UserDbType>({
     accountData: {
         login: {type: String, required: true},
         email: {type: String, required: true},
@@ -54,7 +53,7 @@ const UserSchema = new mongoose.Schema<UserInsertDbType>({
         expirationDate: {type: Date, required: false}
     }
 })
-const CommentSchema = new mongoose.Schema<CommentInsertDbType>({
+const CommentSchema = new mongoose.Schema<CommentDbType>({
     content: {type: String, required: true},
     commentatorInfo: {
         userId: {type: String, required: true},
@@ -80,12 +79,12 @@ const ActiveSessionSchema = new mongoose.Schema<ActiveSessionDbType>({
     expirationDate: {type: Date, required: true},
     refreshTokenMeta: {type: String, required: true}
 })
-const LikeInCommentSchema = new mongoose.Schema<CommentLikeInsertDbType>({
+const LikeInCommentSchema = new mongoose.Schema<CommentLikeDbType>({
     commentId: {type: String, required: true},
     userId: {type: String, required: true},
     likeStatus: {type: String, enum: Object.values(LikeStatus), required: true}
 })
-const LikeInPostSchema = new mongoose.Schema<PostLikeInsertDbType>({
+const LikeInPostSchema = new mongoose.Schema<PostLikeDbType>({
     postId: {type: String, required: true},
     userId: {type: String, required: true},
     userLogin: {type: String, required: true},

@@ -1,30 +1,42 @@
 import {postsRepo} from "../repositories/posts-database";
-import {LikeStatus, PostCreateType, PostViewType, StatusType} from "../types/types";
+import {LikeStatus, PostDbClass, PostViewType, StatusType} from "../types/types";
 import {ObjectId} from "mongodb";
-import {postsQueryRepo} from "../repositories/queryRepo";
+import {blogsQueryRepo, postsQueryRepo} from "../repositories/queryRepo";
 import {likesForPostsService} from "./likes-service";
 
 class PostServiceClass {
     async createPost(postTitle: string, short: string, text: string, blogId: string): Promise<PostViewType | null> {
-        const newPost: PostCreateType = {
-            title: postTitle,
-            shortDescription: short,
-            content: text,
-            blogId: blogId,
-            createdAt: new Date
-        }
+        const foundBlog = await blogsQueryRepo.findBlogById(blogId)
+        if (!foundBlog) return null
+        const newPost = new PostDbClass(
+            new ObjectId(),
+            postTitle,
+            short,
+            text,
+            blogId,
+            foundBlog.name,
+            new Date(),
+            {
+                likesCount: 0,
+                dislikesCount: 0
+            }
+        )
         return await postsRepo.createPost(newPost)
     }
-    async updatePost(inputId: string, postTitle: string, short: string, text: string, blogId: string): Promise <boolean | null> {
+
+    async updatePost(inputId: string, postTitle: string, short: string, text: string, blogId: string): Promise<boolean | null> {
         return await postsRepo.updatePost(inputId, postTitle, short, text, blogId)
     }
-    async deletePost(inputId: string): Promise <boolean | null> {
+
+    async deletePost(inputId: string): Promise<boolean | null> {
         await likesForPostsService.deleteAllLikesWhenPostIsDeleted(inputId)
         return await postsRepo.deletePost(inputId)
     }
+
     async updateBlogNameInAllRelatedPosts(blogId: string, blogName: string): Promise<void> {
         return await postsRepo.updateBlogNameInAllRelatedPosts(blogId, blogName)
     }
+
     async updateLikeStatus(postId: string, activeUserId: ObjectId, activeUserLogin: string, inputLikeStatus: LikeStatus): Promise<StatusType> {
         const foundPost = await postsQueryRepo.findPostById(postId, activeUserId.toString())
         if (!foundPost) {
