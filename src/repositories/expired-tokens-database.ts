@@ -1,10 +1,8 @@
 import {ObjectId, WithId} from "mongodb";
 import {ExpiredTokenInsertDbType} from "../types/types";
 import {ExpiredTokenModelClass} from "./db";
-import {injectable} from "inversify";
 
-@injectable()
-export class ExpiredTokensRepoClass {
+export const expiredTokensRepo = {
     async addTokenToDb(token: string, userId: ObjectId) {
         const expiredToken: ExpiredTokenInsertDbType = {
             userId: userId,
@@ -13,7 +11,7 @@ export class ExpiredTokensRepoClass {
         const expiredTokenInstance = new ExpiredTokenModelClass(expiredToken)
         await expiredTokenInstance.save()
         return
-    }
+    },
     async findToken(token: string): Promise<WithId<ExpiredTokenInsertDbType> | null> {
         return ExpiredTokenModelClass.findOne({refreshToken: token})
     }

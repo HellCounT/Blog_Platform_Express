@@ -2,8 +2,8 @@ import {ObjectId} from "mongodb";
 import {ActiveSessionDbClass, StatusType} from "../types/types";
 import {DevicesRepoClass} from "../repositories/devices-database";
 import {usersQueryRepo} from "../repositories/queryRepo";
-import {jwtService} from "../composition-root";
 import {inject, injectable} from "inversify";
+import {jwtService} from "../application/jwt-service";
 
 @injectable()
 export class DevicesServiceClass {

@@ -290,6 +290,14 @@ export enum LikeStatus {
     dislike = "Dislike"
 }
 
+export type RefreshTokenResult = {
+    refreshToken: string,
+    userId: ObjectId,
+    deviceId: ObjectId,
+    issueDate: Date,
+    expDate: Date
+}
+
 export type StatusType = {
     status: "Not Found" | "Forbidden" | "Updated" | "Deleted" | "Unauthorized" | "Too many requests" | "No content" | "OK",
     code?: number,

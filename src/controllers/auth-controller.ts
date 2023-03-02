@@ -2,8 +2,8 @@ import {UsersServiceClass} from "../domain/users-service";
 import {DevicesServiceClass} from "../domain/devices-service";
 import {Request, Response} from "express";
 import {usersQueryRepo} from "../repositories/queryRepo";
-import {jwtService} from "../composition-root";
 import {inject, injectable} from "inversify";
+import {jwtService} from "../application/jwt-service";
 
 const refreshTokenCookieOptions = {
     httpOnly: true,
@@ -28,7 +28,14 @@ export class AuthControllerClass {
             const ipAddress = req.ip
             const deviceName = req.headers["user-agent"]!
             const accessToken = {"accessToken": jwtService.createJwt(checkResult)}
-            const newRefreshToken = await jwtService.createRefreshJwt(checkResult, ipAddress, deviceName)
+            const newRefreshToken = await jwtService.createRefreshJwt(checkResult)
+            await this.devicesService.startNewSession(newRefreshToken.refreshToken,
+                newRefreshToken.userId,
+                newRefreshToken.deviceId,
+                deviceName,
+                ipAddress,
+                newRefreshToken.issueDate,
+                newRefreshToken.expDate)
             res.status(200).cookie('refreshToken', newRefreshToken, refreshTokenCookieOptions).json(accessToken)
         } else res.sendStatus(401)
     }
@@ -40,11 +47,17 @@ export class AuthControllerClass {
     }
 
     async updateRefreshToken(req: Request, res: Response) {
-        const newRefreshToken = await jwtService.updateRefreshJwt(req.user, req.cookies?.refreshToken)
+        const newRefreshTokenResult = await jwtService.updateRefreshJwt(req.user, req.cookies?.refreshToken)
+        await this.devicesService.updateSessionWithDeviceId(
+            newRefreshTokenResult.refreshToken,
+            req.cookies?.refreshToken.deviceId,
+            newRefreshTokenResult.issueDate,
+            newRefreshTokenResult.expDate)
         const accessToken = {
             "accessToken": jwtService.createJwt(req.user)
         }
-        res.status(200).cookie('refreshToken', newRefreshToken, refreshTokenCookieOptions).json(accessToken)
+
+        res.status(200).cookie('refreshToken', newRefreshTokenResult.refreshToken, refreshTokenCookieOptions).json(accessToken)
     }
 
     async registerUser(req: Request, res: Response) {

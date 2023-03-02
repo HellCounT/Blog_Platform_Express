@@ -1,14 +1,10 @@
 import {NextFunction, Request, Response} from "express";
 import {settings} from "../settings";
-import {ExpiredTokensRepoClass} from "../repositories/expired-tokens-database";
 import {usersQueryRepo} from "../repositories/queryRepo";
-import {jwtService} from "../composition-root";
+import {jwtService} from "../application/jwt-service";
+import {expiredTokensRepo} from "../repositories/expired-tokens-database";
 
-class AuthMiddlewareClass {
-    private expiredTokensRepo: ExpiredTokensRepoClass;
-    constructor() {
-        this.expiredTokensRepo = new ExpiredTokensRepoClass()
-    }
+export const authMiddleware = {
     async checkCredentials(req: Request, res: Response, next: NextFunction) {
         if (!req.headers.authorization) {
             res.sendStatus(401)
@@ -22,14 +18,14 @@ class AuthMiddlewareClass {
                 res.sendStatus(401)
             }
         }
-    }
+    },
 
     async refreshTokenCheck(req: Request, res: Response, next: NextFunction) {
         if (!req.cookies.refreshToken) {
             res.sendStatus(401)
         } else {
             const token = req.cookies.refreshToken
-            if (await this.expiredTokensRepo.findToken(token)) {
+            if (await expiredTokensRepo.findToken(token)) {
                 res.sendStatus(401)
                 return
             }
@@ -39,7 +35,7 @@ class AuthMiddlewareClass {
                 next()
             } else res.sendStatus(401)
         }
-    }
+    },
 
     async parseUserIdByToken(req: Request, res: Response, next: NextFunction) {
         if (!req.headers.authorization) next()
@@ -55,8 +51,6 @@ class AuthMiddlewareClass {
         }
     }
 }
-
-export const authMiddleware = new AuthMiddlewareClass()
 
 // export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
 //     if (!req.headers.authorization) {
