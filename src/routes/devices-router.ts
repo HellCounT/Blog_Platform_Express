@@ -1,8 +1,11 @@
 import {Router} from "express";
 import {authMiddleware} from "../middleware/auth-middleware";
-import {devicesController} from "../composition-root";
+import {container} from "../composition-root";
+import {DevicesControllerClass} from "../controllers/devices-controller";
 
 export const devicesRouter = Router({})
+
+const devicesController = container.resolve(DevicesControllerClass)
 
 devicesRouter.get('/', authMiddleware.refreshTokenCheck, devicesController.getAllSessions.bind(devicesController))
 

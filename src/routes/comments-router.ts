@@ -1,9 +1,12 @@
 import {Router} from "express";
 import {commentDataValidator, inputValidation, likeInputValidator} from "../middleware/data-validation";
 import {authMiddleware} from "../middleware/auth-middleware";
-import {commentsController} from "../composition-root";
+import {container} from "../composition-root";
+import {CommentsControllerClass} from "../controllers/comments-controller";
 
 export const commentsRouter = Router({})
+
+const commentsController = container.resolve(CommentsControllerClass)
 
 commentsRouter.get('/:id',
     authMiddleware.parseUserIdByToken,

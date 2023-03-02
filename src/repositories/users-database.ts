@@ -1,7 +1,9 @@
 import {ObjectId, WithId} from "mongodb";
 import {UserDbType, UserViewType} from "../types/types";
 import {UserModelClass} from "./db";
+import {injectable} from "inversify";
 
+@injectable()
 export class UsersRepoClass {
     async findByLoginOrEmail(loginOrEmail: string) {
         return UserModelClass.findOne({

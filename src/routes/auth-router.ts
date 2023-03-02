@@ -2,9 +2,12 @@ import {Router} from "express";
 import {inputValidation, userDataValidator} from "../middleware/data-validation";
 import {rateLimiterMiddleware} from "../middleware/rate-limiter-middleware";
 import {authMiddleware} from "../middleware/auth-middleware";
-import {authController} from "../composition-root";
+import {container} from "../composition-root";
+import {AuthControllerClass} from "../controllers/auth-controller";
 
 export const authRouter = Router({})
+
+const authController = container.resolve(AuthControllerClass)
 
 authRouter.get('/me', authMiddleware.checkCredentials, authController.getMyInfo.bind(authController))
 

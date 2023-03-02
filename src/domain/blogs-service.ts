@@ -1,9 +1,11 @@
 import {BlogDbClass, BlogViewType} from "../types/types";
 import {ObjectId} from "mongodb";
 import {BlogsRepoClass} from "../repositories/blogs-database";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class BlogsServiceClass {
-    constructor(protected blogsRepo: BlogsRepoClass) {
+    constructor(@inject(BlogsRepoClass) protected blogsRepo: BlogsRepoClass) {
     }
     async createBlog(title: string, desc: string, website: string): Promise<BlogViewType> {
         const newBlog = new BlogDbClass(

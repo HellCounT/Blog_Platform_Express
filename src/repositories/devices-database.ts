@@ -1,7 +1,9 @@
 import {ActiveSessionDbClass} from "../types/types";
 import {ObjectId} from "mongodb";
 import {ActiveSessionModelClass} from "./db";
+import {injectable} from "inversify";
 
+@injectable()
 export class DevicesRepoClass {
     async addSessionToDb(newSession: ActiveSessionDbClass): Promise<void> {
         const activeSessionInstance = new ActiveSessionModelClass(newSession)

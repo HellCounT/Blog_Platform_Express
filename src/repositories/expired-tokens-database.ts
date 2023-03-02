@@ -1,7 +1,9 @@
 import {ObjectId, WithId} from "mongodb";
 import {ExpiredTokenInsertDbType} from "../types/types";
 import {ExpiredTokenModelClass} from "./db";
+import {injectable} from "inversify";
 
+@injectable()
 export class ExpiredTokensRepoClass {
     async addTokenToDb(token: string, userId: ObjectId) {
         const expiredToken: ExpiredTokenInsertDbType = {

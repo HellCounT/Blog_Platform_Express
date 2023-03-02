@@ -4,10 +4,12 @@ import {Request, Response} from "express";
 import {QueryParser} from "../types/types";
 import {parseQueryPagination} from "../application/queryParsers";
 import {blogsQueryRepo, postsQueryRepo} from "../repositories/queryRepo";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class BlogsControllerClass {
-    constructor(protected blogsService: BlogsServiceClass,
-                protected postsService: PostServiceClass) {
+    constructor(@inject(BlogsServiceClass) protected blogsService: BlogsServiceClass,
+                @inject(PostServiceClass) protected postsService: PostServiceClass) {
     }
 
     async getAllBlogs(req: Request, res: Response) {

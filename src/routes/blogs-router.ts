@@ -7,9 +7,12 @@ import {
     postDataValidator
 } from "../middleware/data-validation";
 import {authMiddleware} from "../middleware/auth-middleware";
-import {blogsController} from "../composition-root";
+import {container} from "../composition-root";
+import {BlogsControllerClass} from "../controllers/blogs-controller";
 
 export const blogsRouter = Router({})
+
+const blogsController = container.resolve(BlogsControllerClass)
 
 blogsRouter.get('/', blogsController.getAllBlogs.bind(blogsController))
 

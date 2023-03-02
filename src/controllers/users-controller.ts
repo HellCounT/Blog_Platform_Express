@@ -3,9 +3,11 @@ import {Request, Response} from "express";
 import {UserQueryParser} from "../types/types";
 import {parseUserQueryPagination} from "../application/queryParsers";
 import {usersQueryRepo} from "../repositories/queryRepo";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class UsersControllerClass {
-    constructor(protected usersService: UsersServiceClass) {
+    constructor(@inject(UsersServiceClass) protected usersService: UsersServiceClass) {
     }
 
     async getAllUsers(req: Request, res: Response) {

@@ -3,9 +3,11 @@ import {ActiveSessionDbClass, StatusType} from "../types/types";
 import {DevicesRepoClass} from "../repositories/devices-database";
 import {usersQueryRepo} from "../repositories/queryRepo";
 import {jwtService} from "../composition-root";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class DevicesServiceClass {
-    constructor(protected devicesRepo: DevicesRepoClass) {
+    constructor(@inject(DevicesRepoClass) protected devicesRepo: DevicesRepoClass) {
     }
     async deleteSession(refreshToken: string, userId: ObjectId, deviceId: string): Promise<StatusType> {
         const foundSession = await usersQueryRepo.findSessionByDeviceId(new ObjectId(deviceId))

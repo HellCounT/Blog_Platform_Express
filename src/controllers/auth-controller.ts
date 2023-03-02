@@ -3,15 +3,17 @@ import {DevicesServiceClass} from "../domain/devices-service";
 import {Request, Response} from "express";
 import {usersQueryRepo} from "../repositories/queryRepo";
 import {jwtService} from "../composition-root";
+import {inject, injectable} from "inversify";
 
 const refreshTokenCookieOptions = {
     httpOnly: true,
     secure: true,
 }
 
+@injectable()
 export class AuthControllerClass {
-    constructor(protected usersService: UsersServiceClass,
-                protected devicesService: DevicesServiceClass) {
+    constructor(@inject(UsersServiceClass) protected usersService: UsersServiceClass,
+                @inject(DevicesServiceClass) protected devicesService: DevicesServiceClass) {
     }
 
     async getMyInfo(req: Request, res: Response) {

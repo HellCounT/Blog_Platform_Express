@@ -1,9 +1,11 @@
 import {CommentsServiceClass} from "../domain/comments-service";
 import {Request, Response} from "express";
 import {commentsQueryRepo} from "../repositories/queryRepo";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class CommentsControllerClass {
-    constructor(protected commentsService: CommentsServiceClass) {
+    constructor(@inject(CommentsServiceClass) protected commentsService: CommentsServiceClass) {
     }
 
     async getCommentById(req: Request, res: Response) {

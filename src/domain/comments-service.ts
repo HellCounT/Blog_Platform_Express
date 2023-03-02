@@ -3,10 +3,12 @@ import {ObjectId} from "mongodb";
 import {CommentsRepoClass} from "../repositories/comments-database";
 import {LikesForCommentsServiceClass} from "./likes-service";
 import {commentsQueryRepo, postsQueryRepo, usersQueryRepo} from "../repositories/queryRepo";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class CommentsServiceClass {
-    constructor(protected commentsRepo: CommentsRepoClass,
-                protected likesForCommentsService: LikesForCommentsServiceClass) {
+    constructor(@inject(CommentsRepoClass) protected commentsRepo: CommentsRepoClass,
+                @inject(LikesForCommentsServiceClass) protected likesForCommentsService: LikesForCommentsServiceClass) {
     }
     async createComment(postId: string, userId: ObjectId, content: string): Promise<CommentViewType | null> {
         const foundUser = await usersQueryRepo.findUserById(userId)

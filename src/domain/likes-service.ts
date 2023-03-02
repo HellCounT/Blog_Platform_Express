@@ -1,9 +1,11 @@
 import {CommentLikeDbClass, LikeStatus, PostLikeDbClass} from "../types/types";
 import {ObjectId} from "mongodb";
 import {LikesForCommentsRepoClass, LikesForPostsRepoClass} from "../repositories/likes-database";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class LikesForCommentsServiceClass {
-    constructor(protected likesForCommentsRepo: LikesForCommentsRepoClass) {
+    constructor(@inject(LikesForCommentsRepoClass) protected likesForCommentsRepo: LikesForCommentsRepoClass) {
     }
     async createNewLike(commentId: string, userId: string, likeStatus: LikeStatus): Promise<void> {
         const newLike = new CommentLikeDbClass(
@@ -24,8 +26,10 @@ export class LikesForCommentsServiceClass {
         return
     }
 }
+
+@injectable()
 export class LikesForPostsServiceClass {
-    constructor(protected likesForPostsRepo: LikesForPostsRepoClass) {
+    constructor(@inject(LikesForPostsRepoClass) protected likesForPostsRepo: LikesForPostsRepoClass) {
     }
     async createNewLike(postId: string, userId: string, userLogin: string, likeStatus: LikeStatus): Promise<void> {
         const newLike = new PostLikeDbClass(

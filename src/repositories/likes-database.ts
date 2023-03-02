@@ -1,6 +1,8 @@
 import {CommentLikeDbType, LikeStatus, PostLikeDbType} from "../types/types";
 import {LikeInCommentModelClass, LikeInPostModelClass} from "./db";
+import {injectable} from "inversify";
 
+@injectable()
 export class LikesForCommentsRepoClass {
     async createNewLike(newLike: CommentLikeDbType): Promise<void> {
         const likeInCommentInstance = new LikeInCommentModelClass(newLike)
@@ -23,6 +25,8 @@ export class LikesForCommentsRepoClass {
         return
     }
 }
+
+@injectable()
 export class LikesForPostsRepoClass {
     async createNewLike(newLike: PostLikeDbType): Promise<void> {
         const likeInPostInstance = new LikeInPostModelClass(newLike)

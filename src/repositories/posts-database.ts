@@ -1,7 +1,9 @@
 import {ObjectId} from "mongodb";
 import {LikeStatus, PostDbType, PostViewType} from "../types/types";
 import {BlogModelClass, PostModelClass} from "./db";
+import {injectable} from "inversify";
 
+@injectable()
 export class PostsRepoClass {
     async createPost(newPost: PostDbType): Promise<PostViewType | null> {
             const postInstance = new PostModelClass(newPost)

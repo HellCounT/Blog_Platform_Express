@@ -5,10 +5,13 @@ import {ObjectId, WithId} from "mongodb";
 import {v4 as uuidv4} from "uuid";
 import add from 'date-fns/add'
 import {emailManager} from "../managers/email-manager";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class UsersServiceClass {
-    constructor(protected usersRepo: UsersRepoClass) {
+    constructor(@inject(UsersRepoClass) protected usersRepo: UsersRepoClass) {
     }
+
     async registerUser(login: string, password: string, email: string): Promise<UserViewType | null> {
         const passwordHash = await this._generateHash(password)
         const currentDate = new Date()
@@ -40,6 +43,7 @@ export class UsersServiceClass {
         }
         return createUserResult
     }
+
     async createUser(login: string, password: string, email: string): Promise<UserViewType | null> {
         const passwordHash = await this._generateHash(password)
         const currentDate = new Date()
@@ -65,9 +69,11 @@ export class UsersServiceClass {
             await this.usersRepo.findByLoginOrEmail(email)) return null
         return await this.usersRepo.createUser(newUser)
     }
+
     async deleteUser(id: string): Promise<boolean | null> {
         return await this.usersRepo.deleteUser(id)
     }
+
     async checkCredentials(loginOrEmail: string, password: string): Promise<WithId<UserDbType> | null> {
         const foundUser = await this.usersRepo.findByLoginOrEmail(loginOrEmail)
         if (!foundUser) return null
@@ -78,6 +84,7 @@ export class UsersServiceClass {
             else return null
         }
     }
+
     async confirmUserEmail(code: string): Promise<boolean> {
         const foundUser = await this.usersRepo.findByConfirmationCode(code)
         if (!foundUser) return false
@@ -86,6 +93,7 @@ export class UsersServiceClass {
         if (new Date(foundUser.emailConfirmationData.expirationDate) < new Date()) return false
         return await this.usersRepo.confirmationSetUser(foundUser._id.toString())
     }
+
     async resendActivationCode(email: string): Promise<boolean> {
         const foundUser = await this.usersRepo.findByLoginOrEmail(email)
         if (!foundUser) return false
@@ -100,6 +108,7 @@ export class UsersServiceClass {
             return false
         }
     }
+
     async sendPasswordRecoveryCode(email: string) {
         const newCode = uuidv4()
         const foundUser = await this.usersRepo.findByLoginOrEmail(email)
@@ -114,6 +123,7 @@ export class UsersServiceClass {
             return false
         }
     }
+
     async updatePasswordByRecoveryCode(recoveryCode: string, newPassword: string) {
         const foundUser = await this.usersRepo.findByRecoveryCode(recoveryCode)
         if (!foundUser) return false
@@ -123,6 +133,7 @@ export class UsersServiceClass {
             return true
         }
     }
+
     async _generateHash(password: string) {
         const salt = await bcrypt.genSalt(10)
         return await bcrypt.hash(password, salt)

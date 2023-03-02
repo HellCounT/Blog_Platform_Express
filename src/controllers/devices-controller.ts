@@ -1,9 +1,11 @@
 import {DevicesServiceClass} from "../domain/devices-service";
 import {Request, Response} from "express";
 import {usersQueryRepo} from "../repositories/queryRepo";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class DevicesControllerClass {
-    constructor(protected devicesService: DevicesServiceClass) {
+    constructor(@inject(DevicesServiceClass) protected devicesService: DevicesServiceClass) {
     }
 
     async getAllSessions(req: Request, res: Response) {

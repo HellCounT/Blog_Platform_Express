@@ -1,3 +1,4 @@
+import "reflect-metadata";
 import {BlogsRepoClass} from "./repositories/blogs-database";
 import {BlogsServiceClass} from "./domain/blogs-service";
 import {BlogsControllerClass} from "./controllers/blogs-controller";
@@ -18,6 +19,8 @@ import {PostsControllerClass} from "./controllers/posts-controller";
 import {UsersControllerClass} from "./controllers/users-controller";
 import {JwtServiceClass} from "./application/jwt-service";
 import {ExpiredTokensRepoClass} from "./repositories/expired-tokens-database";
+import {Container} from "inversify";
+import "reflect-metadata"
 
 const commentsRepo = new CommentsRepoClass()
 const likesForCommentsRepo = new LikesForCommentsRepoClass()
@@ -45,5 +48,36 @@ export const devicesController = new DevicesControllerClass(devicesService)
 
 export const authController = new AuthControllerClass(usersService, devicesService)
 
-const expiredTokensRepo = new ExpiredTokensRepoClass()
+export const expiredTokensRepo = new ExpiredTokensRepoClass()
 export const jwtService = new JwtServiceClass(devicesService, expiredTokensRepo)
+
+export const container = new Container()
+
+container.bind<CommentsRepoClass>(CommentsRepoClass).to(CommentsRepoClass)
+container.bind<LikesForCommentsRepoClass>(LikesForCommentsRepoClass).to(LikesForCommentsRepoClass)
+container.bind<LikesForCommentsServiceClass>(LikesForCommentsServiceClass).to(LikesForCommentsServiceClass)
+container.bind<CommentsServiceClass>(CommentsServiceClass).to(CommentsServiceClass)
+container.bind<CommentsControllerClass>(CommentsControllerClass).to(CommentsControllerClass)
+
+container.bind<PostsRepoClass>(PostsRepoClass).to(PostsRepoClass)
+container.bind<LikesForPostsRepoClass>(LikesForPostsRepoClass).to(LikesForPostsRepoClass)
+container.bind<LikesForPostsServiceClass>(LikesForPostsServiceClass).to(LikesForPostsServiceClass)
+container.bind<PostServiceClass>(PostServiceClass).to(PostServiceClass)
+container.bind<PostsControllerClass>(PostsControllerClass).to(PostsControllerClass)
+
+container.bind<BlogsRepoClass>(BlogsRepoClass).toSelf()
+container.bind<BlogsServiceClass>(BlogsServiceClass).toSelf()
+container.bind<BlogsControllerClass>(BlogsControllerClass).toSelf()
+
+container.bind<UsersControllerClass>(UsersControllerClass).to(UsersControllerClass)
+container.bind<UsersServiceClass>(UsersServiceClass).to(UsersServiceClass)
+container.bind<UsersRepoClass>(UsersRepoClass).to(UsersRepoClass)
+
+container.bind<DevicesRepoClass>(DevicesRepoClass).toSelf()
+container.bind<DevicesServiceClass>(DevicesServiceClass).toSelf()
+container.bind<DevicesControllerClass>(DevicesControllerClass).toSelf()
+
+container.bind<AuthControllerClass>(AuthControllerClass).toSelf()
+
+container.bind<ExpiredTokensRepoClass>(ExpiredTokensRepoClass).toSelf()
+container.bind<JwtServiceClass>(JwtServiceClass).toSelf()

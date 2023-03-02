@@ -3,10 +3,12 @@ import {ObjectId} from "mongodb";
 import {PostsRepoClass} from "../repositories/posts-database";
 import {LikesForPostsServiceClass} from "./likes-service";
 import {blogsQueryRepo, postsQueryRepo} from "../repositories/queryRepo";
+import {inject, injectable} from "inversify";
 
+@injectable()
 export class PostServiceClass {
-    constructor(protected postsRepo: PostsRepoClass,
-                protected likesForPostsService: LikesForPostsServiceClass) {
+    constructor(@inject(PostsRepoClass) protected postsRepo: PostsRepoClass,
+                @inject(LikesForPostsServiceClass) protected likesForPostsService: LikesForPostsServiceClass) {
     }
     async createPost(postTitle: string, short: string, text: string, blogId: string): Promise<PostViewType | null> {
         const foundBlog = await blogsQueryRepo.findBlogById(blogId)
