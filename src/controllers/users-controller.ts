@@ -2,7 +2,7 @@ import {UsersServiceClass} from "../domain/users-service";
 import {Request, Response} from "express";
 import {UserQueryParser} from "../types/types";
 import {parseUserQueryPagination} from "../application/queryParsers";
-import {usersQueryRepo} from "../repositories/queryRepo";
+import {usersQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
 
 @injectable()

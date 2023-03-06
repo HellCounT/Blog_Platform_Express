@@ -1,6 +1,6 @@
 import {CommentsServiceClass} from "../domain/comments-service";
 import {Request, Response} from "express";
-import {commentsQueryRepo} from "../repositories/queryRepo";
+import {commentsQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
 
 @injectable()

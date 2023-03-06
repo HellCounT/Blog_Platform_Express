@@ -1,6 +1,6 @@
 import {DevicesServiceClass} from "../domain/devices-service";
 import {Request, Response} from "express";
-import {usersQueryRepo} from "../repositories/queryRepo";
+import {usersQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
 
 @injectable()

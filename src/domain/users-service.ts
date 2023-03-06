@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import {UsersRepoClass} from "../repositories/users-database";
+import {UsersRepoClass} from "../repositories/users-repo";
 import {UserDbClass, UserDbType, UserViewType} from "../types/types";
 import {ObjectId, WithId} from "mongodb";
 import {v4 as uuidv4} from "uuid";

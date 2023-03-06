@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken'
 import {ObjectId, WithId} from "mongodb";
 import {RefreshTokenResult, UserDbType} from "../types/types";
 import {settings} from "../settings";
-import {expiredTokensRepo} from "../repositories/expired-tokens-database";
+import {expiredTokensRepo} from "../repositories/expired-tokens-repo";
 
 export const jwtService = {
     createJwt(user: WithId<UserDbType>): string {

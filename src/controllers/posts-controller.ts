@@ -3,7 +3,7 @@ import {CommentsServiceClass} from "../domain/comments-service";
 import {Request, Response} from "express";
 import {QueryParser} from "../types/types";
 import {parseQueryPagination} from "../application/queryParsers";
-import {commentsQueryRepo, postsQueryRepo} from "../repositories/queryRepo";
+import {commentsQueryRepo, postsQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
 
 @injectable()

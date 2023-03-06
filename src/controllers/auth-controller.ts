@@ -1,7 +1,7 @@
 import {UsersServiceClass} from "../domain/users-service";
 import {DevicesServiceClass} from "../domain/devices-service";
 import {Request, Response} from "express";
-import {usersQueryRepo} from "../repositories/queryRepo";
+import {usersQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
 import {jwtService} from "../application/jwt-service";
 

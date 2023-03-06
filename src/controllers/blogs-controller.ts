@@ -3,7 +3,7 @@ import {BlogsServiceClass} from "../domain/blogs-service";
 import {Request, Response} from "express";
 import {QueryParser} from "../types/types";
 import {parseQueryPagination} from "../application/queryParsers";
-import {blogsQueryRepo, postsQueryRepo} from "../repositories/queryRepo";
+import {blogsQueryRepo, postsQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
 
 @injectable()
