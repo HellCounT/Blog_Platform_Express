@@ -2,16 +2,18 @@ import {LikeStatus, PostDbClass, PostViewType, StatusType} from "../types/types"
 import {ObjectId} from "mongodb";
 import {PostsRepoClass} from "../repositories/posts-repo";
 import {LikesForPostsServiceClass} from "./likes-service";
-import {blogsQueryRepo, postsQueryRepo} from "../repositories/query-repo";
+import {BlogsQueryRepo, PostsQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
 
 @injectable()
 export class PostServiceClass {
     constructor(@inject(PostsRepoClass) protected postsRepo: PostsRepoClass,
-                @inject(LikesForPostsServiceClass) protected likesForPostsService: LikesForPostsServiceClass) {
+                @inject(LikesForPostsServiceClass) protected likesForPostsService: LikesForPostsServiceClass,
+                @inject(BlogsQueryRepo) protected blogsQueryRepo: BlogsQueryRepo,
+                @inject(PostsQueryRepo) protected postsQueryRepo: PostsQueryRepo) {
     }
     async createPost(postTitle: string, short: string, text: string, blogId: string): Promise<PostViewType | null> {
-        const foundBlog = await blogsQueryRepo.findBlogById(blogId)
+        const foundBlog = await this.blogsQueryRepo.findBlogById(blogId)
         if (!foundBlog) return null
         const newPost = new PostDbClass(
             new ObjectId(),
@@ -39,7 +41,7 @@ export class PostServiceClass {
     }
 
     async updateLikeStatus(postId: string, activeUserId: ObjectId, activeUserLogin: string, inputLikeStatus: LikeStatus): Promise<StatusType> {
-        const foundPost = await postsQueryRepo.findPostById(postId, activeUserId.toString())
+        const foundPost = await this.postsQueryRepo.findPostById(postId, activeUserId.toString())
         if (!foundPost) {
             return {
                 status: "Not Found",
@@ -47,7 +49,7 @@ export class PostServiceClass {
                 message: 'Comment is not found'
             }
         } else {
-            const foundUserLike = await postsQueryRepo.getUserLikeForPost(activeUserId.toString(), postId)
+            const foundUserLike = await this.postsQueryRepo.getUserLikeForPost(activeUserId.toString(), postId)
             let currentLikesCount = foundPost.extendedLikesInfo.likesCount
             let currentDislikesCount = foundPost.extendedLikesInfo.dislikesCount
             switch (inputLikeStatus) {

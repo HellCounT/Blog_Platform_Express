@@ -1,15 +1,16 @@
 import {CommentsServiceClass} from "../domain/comments-service";
 import {Request, Response} from "express";
-import {commentsQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
+import {CommentsQueryRepo} from "../repositories/query-repo";
 
 @injectable()
 export class CommentsControllerClass {
-    constructor(@inject(CommentsServiceClass) protected commentsService: CommentsServiceClass) {
+    constructor(@inject(CommentsServiceClass) protected commentsService: CommentsServiceClass,
+                @inject(CommentsQueryRepo) protected commentsQueryRepo: CommentsQueryRepo) {
     }
 
     async getCommentById(req: Request, res: Response) {
-        const commentIdSearchResult = await commentsQueryRepo.findCommentById(req.params.id, req.user?._id.toString())
+        const commentIdSearchResult = await this.commentsQueryRepo.findCommentById(req.params.id, req.user?._id.toString())
         if (commentIdSearchResult) return res.status(200).send(commentIdSearchResult)
         else res.sendStatus(404)
     }

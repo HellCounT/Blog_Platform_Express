@@ -1,8 +1,10 @@
 import {NextFunction, Request, Response} from "express";
 import {settings} from "../settings";
-import {usersQueryRepo} from "../repositories/query-repo";
 import {jwtService} from "../application/jwt-service";
 import {expiredTokensRepo} from "../repositories/expired-tokens-repo";
+import {UsersQueryRepo} from "../repositories/query-repo";
+
+const usersQueryRepo = new UsersQueryRepo()
 
 export const authMiddleware = {
     async checkCredentials(req: Request, res: Response, next: NextFunction) {

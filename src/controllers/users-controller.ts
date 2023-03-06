@@ -2,18 +2,21 @@ import {UsersServiceClass} from "../domain/users-service";
 import {Request, Response} from "express";
 import {UserQueryParser} from "../types/types";
 import {parseUserQueryPagination} from "../application/queryParsers";
-import {usersQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
+import {UsersQueryRepo} from "../repositories/query-repo";
 
 @injectable()
 export class UsersControllerClass {
-    constructor(@inject(UsersServiceClass) protected usersService: UsersServiceClass) {
+    constructor(
+        @inject(UsersServiceClass) protected usersService: UsersServiceClass,
+        @inject(UsersQueryRepo) protected usersQueryRepo: UsersQueryRepo
+    ) {
     }
 
     async getAllUsers(req: Request, res: Response) {
         // query validation and parsing
         let queryParams: UserQueryParser = parseUserQueryPagination(req)
-        res.status(200).send(await usersQueryRepo.viewAllUsers(queryParams))
+        res.status(200).send(await this.usersQueryRepo.viewAllUsers(queryParams))
     }
 
     async createUser(req: Request, res: Response) {

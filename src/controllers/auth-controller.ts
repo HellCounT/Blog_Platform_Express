@@ -1,9 +1,9 @@
 import {UsersServiceClass} from "../domain/users-service";
 import {DevicesServiceClass} from "../domain/devices-service";
 import {Request, Response} from "express";
-import {usersQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
 import {jwtService} from "../application/jwt-service";
+import {UsersQueryRepo} from "../repositories/query-repo";
 
 const refreshTokenCookieOptions = {
     httpOnly: true,
@@ -13,12 +13,13 @@ const refreshTokenCookieOptions = {
 @injectable()
 export class AuthControllerClass {
     constructor(@inject(UsersServiceClass) protected usersService: UsersServiceClass,
-                @inject(DevicesServiceClass) protected devicesService: DevicesServiceClass) {
+                @inject(DevicesServiceClass) protected devicesService: DevicesServiceClass,
+                @inject(UsersQueryRepo) protected usersQueryRepo: UsersQueryRepo) {
     }
 
     async getMyInfo(req: Request, res: Response) {
         const token = req.headers.authorization!.split(' ')[1]
-        const result = await usersQueryRepo.getMyInfo(token)
+        const result = await this.usersQueryRepo.getMyInfo(token)
         res.status(200).send(result)
     }
 

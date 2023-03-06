@@ -2,17 +2,20 @@ import {CommentDbClass, CommentViewType, LikeStatus, StatusType} from "../types/
 import {ObjectId} from "mongodb";
 import {CommentsRepoClass} from "../repositories/comments-repo";
 import {LikesForCommentsServiceClass} from "./likes-service";
-import {commentsQueryRepo, postsQueryRepo, usersQueryRepo} from "../repositories/query-repo";
+import {CommentsQueryRepo, PostsQueryRepo, UsersQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
 
 @injectable()
 export class CommentsServiceClass {
     constructor(@inject(CommentsRepoClass) protected commentsRepo: CommentsRepoClass,
-                @inject(LikesForCommentsServiceClass) protected likesForCommentsService: LikesForCommentsServiceClass) {
+                @inject(LikesForCommentsServiceClass) protected likesForCommentsService: LikesForCommentsServiceClass,
+                @inject(PostsQueryRepo) protected postsQueryRepo: PostsQueryRepo,
+                @inject(CommentsQueryRepo) protected commentsQueryRepo: CommentsQueryRepo,
+                @inject(UsersQueryRepo) protected usersQueryRepo: UsersQueryRepo) {
     }
     async createComment(postId: string, userId: ObjectId, content: string): Promise<CommentViewType | null> {
-        const foundUser = await usersQueryRepo.findUserById(userId)
-        const foundPost = await postsQueryRepo.findPostById(postId, userId.toString())
+        const foundUser = await this.usersQueryRepo.findUserById(userId)
+        const foundPost = await this.postsQueryRepo.findPostById(postId, userId.toString())
         if (!foundUser || !foundPost) return null
         const newComment = new CommentDbClass(
             new ObjectId(),
@@ -32,7 +35,7 @@ export class CommentsServiceClass {
     }
 
     async updateComment(commentId: string, userId: ObjectId, content: string): Promise<StatusType> {
-        const foundComment = await commentsQueryRepo.findCommentById(commentId, userId.toString())
+        const foundComment = await this.commentsQueryRepo.findCommentById(commentId, userId.toString())
         if (!foundComment) return {status: "Not Found"}
         if (foundComment.commentatorInfo.userId === userId.toString()) {
             await this.commentsRepo.updateComment(commentId, content)
@@ -49,7 +52,7 @@ export class CommentsServiceClass {
     }
 
     async deleteComment(commentId: string, userId: ObjectId): Promise<StatusType> {
-        const foundComment = await commentsQueryRepo.findCommentById(commentId, userId.toString())
+        const foundComment = await this.commentsQueryRepo.findCommentById(commentId, userId.toString())
         if (!foundComment) return {
             status: "Not Found",
             code: 404,
@@ -71,7 +74,7 @@ export class CommentsServiceClass {
     }
 
     async updateLikeStatus(commentId: string, activeUserId: ObjectId, inputLikeStatus: LikeStatus): Promise<StatusType> {
-        const foundComment = await commentsQueryRepo.findCommentById(commentId, activeUserId.toString())
+        const foundComment = await this.commentsQueryRepo.findCommentById(commentId, activeUserId.toString())
         if (!foundComment) {
             return {
                 status: "Not Found",
@@ -79,7 +82,7 @@ export class CommentsServiceClass {
                 message: 'Comment is not found'
             }
         } else {
-            const foundUserLike = await commentsQueryRepo.getUserLikeForComment(activeUserId.toString(), commentId)
+            const foundUserLike = await this.commentsQueryRepo.getUserLikeForComment(activeUserId.toString(), commentId)
             let currentLikesCount = foundComment.likesInfo.likesCount
             let currentDislikesCount = foundComment.likesInfo.dislikesCount
             switch (inputLikeStatus) {

@@ -3,23 +3,25 @@ import {BlogsServiceClass} from "../domain/blogs-service";
 import {Request, Response} from "express";
 import {QueryParser} from "../types/types";
 import {parseQueryPagination} from "../application/queryParsers";
-import {blogsQueryRepo, postsQueryRepo} from "../repositories/query-repo";
+import {BlogsQueryRepo, PostsQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
 
 @injectable()
 export class BlogsControllerClass {
     constructor(@inject(BlogsServiceClass) protected blogsService: BlogsServiceClass,
-                @inject(PostServiceClass) protected postsService: PostServiceClass) {
+                @inject(PostServiceClass) protected postsService: PostServiceClass,
+                @inject(BlogsQueryRepo) protected blogsQueryRepo: BlogsQueryRepo,
+                @inject(PostsQueryRepo) protected postsQueryRepo: PostsQueryRepo) {
     }
 
     async getAllBlogs(req: Request, res: Response) {
         // query validation and parsing
         let queryParams: QueryParser = parseQueryPagination(req)
-        res.status(200).send(await blogsQueryRepo.viewAllBlogs(queryParams));
+        res.status(200).send(await this.blogsQueryRepo.viewAllBlogs(queryParams));
     }
 
     async getBlogById(req: Request, res: Response) {
-        const blogIdSearchResult = await blogsQueryRepo.findBlogById(req.params.id)
+        const blogIdSearchResult = await this.blogsQueryRepo.findBlogById(req.params.id)
         if (blogIdSearchResult) {
             res.status(200).send(blogIdSearchResult)
         } else {
@@ -29,7 +31,7 @@ export class BlogsControllerClass {
 
     async getPostsForBlogId(req: Request, res: Response) {
         let queryParams: QueryParser = parseQueryPagination(req)
-        const postsByBlogIdSearchResult = await postsQueryRepo.findPostsByBlogId(req.params.id, queryParams, req.user?._id.toString())
+        const postsByBlogIdSearchResult = await this.postsQueryRepo.findPostsByBlogId(req.params.id, queryParams, req.user?._id.toString())
         if (postsByBlogIdSearchResult) {
             res.status(200).send(postsByBlogIdSearchResult)
         } else {

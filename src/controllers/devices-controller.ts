@@ -1,16 +1,19 @@
 import {DevicesServiceClass} from "../domain/devices-service";
 import {Request, Response} from "express";
-import {usersQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
+import {UsersQueryRepo} from "../repositories/query-repo";
 
 @injectable()
 export class DevicesControllerClass {
-    constructor(@inject(DevicesServiceClass) protected devicesService: DevicesServiceClass) {
+    constructor(
+        @inject(DevicesServiceClass) protected devicesService: DevicesServiceClass,
+        @inject(UsersQueryRepo) protected usersQueryRepo: UsersQueryRepo
+        ) {
     }
 
     async getAllSessions(req: Request, res: Response) {
         const refreshToken = req.cookies.refreshToken
-        const result = await usersQueryRepo.getAllSessions(refreshToken)
+        const result = await this.usersQueryRepo.getAllSessions(refreshToken)
         res.status(200).send(result)
     }
 

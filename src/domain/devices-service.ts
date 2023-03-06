@@ -1,16 +1,17 @@
 import {ObjectId} from "mongodb";
 import {ActiveSessionDbClass, StatusType} from "../types/types";
 import {DevicesRepoClass} from "../repositories/devices-repo";
-import {usersQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
 import {jwtService} from "../application/jwt-service";
+import {UsersQueryRepo} from "../repositories/query-repo";
 
 @injectable()
 export class DevicesServiceClass {
-    constructor(@inject(DevicesRepoClass) protected devicesRepo: DevicesRepoClass) {
+    constructor(@inject(DevicesRepoClass) protected devicesRepo: DevicesRepoClass,
+                @inject(UsersQueryRepo) protected usersQueryRepo: UsersQueryRepo) {
     }
     async deleteSession(refreshToken: string, userId: ObjectId, deviceId: string): Promise<StatusType> {
-        const foundSession = await usersQueryRepo.findSessionByDeviceId(new ObjectId(deviceId))
+        const foundSession = await this.usersQueryRepo.findSessionByDeviceId(new ObjectId(deviceId))
         if (foundSession) {
             if (foundSession.userId.toString() === userId.toString()) {
                 await this.devicesRepo.deleteSessionById(new ObjectId(deviceId))

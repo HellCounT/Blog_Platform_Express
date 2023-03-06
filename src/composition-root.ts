@@ -18,6 +18,7 @@ import {CommentsControllerClass} from "./controllers/comments-controller";
 import {DevicesControllerClass} from "./controllers/devices-controller";
 import {PostsControllerClass} from "./controllers/posts-controller";
 import {UsersControllerClass} from "./controllers/users-controller";
+import {BlogsQueryRepo, CommentsQueryRepo, PostsQueryRepo, UsersQueryRepo} from "./repositories/query-repo";
 
 // const commentsRepo = new CommentsRepoClass()
 // const likesForCommentsRepo = new LikesForCommentsRepoClass()
@@ -51,25 +52,29 @@ import {UsersControllerClass} from "./controllers/users-controller";
 
 export const container = new Container()
 
-container.bind<CommentsRepoClass>(CommentsRepoClass).to(CommentsRepoClass)
-container.bind<LikesForCommentsRepoClass>(LikesForCommentsRepoClass).to(LikesForCommentsRepoClass)
-container.bind<LikesForCommentsServiceClass>(LikesForCommentsServiceClass).to(LikesForCommentsServiceClass)
-container.bind<CommentsServiceClass>(CommentsServiceClass).to(CommentsServiceClass)
-container.bind<CommentsControllerClass>(CommentsControllerClass).to(CommentsControllerClass)
+container.bind<CommentsRepoClass>(CommentsRepoClass).toSelf()
+container.bind<LikesForCommentsRepoClass>(LikesForCommentsRepoClass).toSelf()
+container.bind<LikesForCommentsServiceClass>(LikesForCommentsServiceClass).toSelf()
+container.bind<CommentsServiceClass>(CommentsServiceClass).toSelf()
+container.bind<CommentsControllerClass>(CommentsControllerClass).toSelf()
+container.bind<CommentsQueryRepo>(CommentsQueryRepo).toSelf()
 
-container.bind<PostsRepoClass>(PostsRepoClass).to(PostsRepoClass)
-container.bind<LikesForPostsRepoClass>(LikesForPostsRepoClass).to(LikesForPostsRepoClass)
-container.bind<LikesForPostsServiceClass>(LikesForPostsServiceClass).to(LikesForPostsServiceClass)
-container.bind<PostServiceClass>(PostServiceClass).to(PostServiceClass)
-container.bind<PostsControllerClass>(PostsControllerClass).to(PostsControllerClass)
+container.bind<PostsRepoClass>(PostsRepoClass).toSelf()
+container.bind<LikesForPostsRepoClass>(LikesForPostsRepoClass).toSelf()
+container.bind<LikesForPostsServiceClass>(LikesForPostsServiceClass).toSelf()
+container.bind<PostServiceClass>(PostServiceClass).toSelf()
+container.bind<PostsControllerClass>(PostsControllerClass).toSelf()
+container.bind<PostsQueryRepo>(PostsQueryRepo).toSelf()
 
 container.bind<BlogsRepoClass>(BlogsRepoClass).toSelf()
 container.bind<BlogsServiceClass>(BlogsServiceClass).toSelf()
 container.bind<BlogsControllerClass>(BlogsControllerClass).toSelf()
+container.bind<BlogsQueryRepo>(BlogsQueryRepo).to(BlogsQueryRepo)
 
 container.bind<UsersControllerClass>(UsersControllerClass).to(UsersControllerClass)
 container.bind<UsersServiceClass>(UsersServiceClass).to(UsersServiceClass)
 container.bind<UsersRepoClass>(UsersRepoClass).to(UsersRepoClass)
+container.bind<UsersQueryRepo>(UsersQueryRepo).toSelf()
 
 container.bind<DevicesRepoClass>(DevicesRepoClass).toSelf()
 container.bind<DevicesServiceClass>(DevicesServiceClass).toSelf()

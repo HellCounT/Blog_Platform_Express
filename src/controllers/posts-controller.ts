@@ -3,23 +3,27 @@ import {CommentsServiceClass} from "../domain/comments-service";
 import {Request, Response} from "express";
 import {QueryParser} from "../types/types";
 import {parseQueryPagination} from "../application/queryParsers";
-import {commentsQueryRepo, postsQueryRepo} from "../repositories/query-repo";
+import {CommentsQueryRepo, PostsQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
 
 @injectable()
 export class PostsControllerClass {
-    constructor(@inject(PostServiceClass) protected postsService: PostServiceClass,
-                @inject(CommentsServiceClass) protected commentsService: CommentsServiceClass) {
+    constructor(
+        @inject(PostServiceClass) protected postsService: PostServiceClass,
+        @inject(CommentsServiceClass) protected commentsService: CommentsServiceClass,
+        @inject(PostsQueryRepo) protected postsQueryRepo: PostsQueryRepo,
+        @inject(CommentsQueryRepo) protected commentsQueryRepo: CommentsQueryRepo
+    ) {
     }
 
     async getAllPosts(req: Request, res: Response) {
         // query validation and parsing
         let queryParams: QueryParser = parseQueryPagination(req)
-        res.status(200).send(await postsQueryRepo.viewAllPosts(queryParams, req.user?._id.toString()))
+        res.status(200).send(await this.postsQueryRepo.viewAllPosts(queryParams, req.user?._id.toString()))
     }
 
     async getPostById(req: Request, res: Response) {
-        const postIdSearchResult = await postsQueryRepo.findPostById(req.params.id, req.user?._id.toString())
+        const postIdSearchResult = await this.postsQueryRepo.findPostById(req.params.id, req.user?._id.toString())
         if (postIdSearchResult) {
             res.status(200).send(postIdSearchResult)
         } else {
@@ -30,7 +34,7 @@ export class PostsControllerClass {
     async getCommentsByPostId(req: Request, res: Response) {
         // query validation and parsing
         let queryParams = parseQueryPagination(req)
-        const commentsByPostIdSearchResult = await commentsQueryRepo.findCommentsByPostId(req.params.postId, queryParams, req.user?._id.toString())
+        const commentsByPostIdSearchResult = await this.commentsQueryRepo.findCommentsByPostId(req.params.postId, queryParams, req.user?._id.toString())
         if (commentsByPostIdSearchResult) res.status(200).send(commentsByPostIdSearchResult)
         else res.sendStatus(404)
     }
