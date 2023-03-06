@@ -1,7 +1,7 @@
-import {ActiveSessionDbClass} from "../types/types";
 import {ObjectId} from "mongodb";
 import {ActiveSessionModelClass} from "./db";
 import {injectable} from "inversify";
+import {ActiveSessionDbClass} from "../types/dbClasses";
 
 @injectable()
 export class DevicesRepoClass {

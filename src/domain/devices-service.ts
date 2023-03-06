@@ -1,9 +1,10 @@
 import {ObjectId} from "mongodb";
-import {ActiveSessionDbClass, StatusType} from "../types/types";
+import {StatusType} from "../types/types";
 import {DevicesRepoClass} from "../repositories/devices-repo";
 import {inject, injectable} from "inversify";
 import {jwtService} from "../application/jwt-service";
 import {UsersQueryRepo} from "../repositories/query-repo";
+import {ActiveSessionDbClass} from "../types/dbClasses";
 
 @injectable()
 export class DevicesServiceClass {

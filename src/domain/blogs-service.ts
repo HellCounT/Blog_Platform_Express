@@ -1,7 +1,8 @@
-import {BlogDbClass, BlogViewType} from "../types/types";
 import {ObjectId} from "mongodb";
 import {BlogsRepoClass} from "../repositories/blogs-repo";
 import {inject, injectable} from "inversify";
+import {BlogDbClass} from "../types/dbClasses";
+import {BlogViewType} from "../types/viewTypes";
 
 @injectable()
 export class BlogsServiceClass {

@@ -1,25 +1,9 @@
 import "reflect-metadata";
 import {ObjectId, WithId} from "mongodb";
 import {
-    ActiveSessionDbType,
-    BlogDbType,
-    BlogPaginatorType,
-    BlogViewType,
-    CommentDbType,
-    CommentLikeDbType,
-    CommentPaginatorType,
-    CommentViewType,
-    DeviceViewType,
     LikeStatus,
-    MeViewType,
-    PostDbType,
-    PostPaginatorType,
-    PostViewType,
     QueryParser,
-    UserDbType,
-    UserPaginatorType,
-    UserQueryParser,
-    UserViewType
+    UserQueryParser
 } from "../types/types";
 import {settings} from "../settings";
 import {
@@ -33,6 +17,21 @@ import {
 } from "./db";
 import {jwtService} from "../application/jwt-service";
 import {injectable} from "inversify";
+import {
+    ActiveSessionDbType,
+    BlogDbType,
+    CommentDbType,
+    CommentLikeDbType,
+    PostDbType,
+    UserDbType
+} from "../types/dbTypes";
+import {
+    BlogPaginatorType, BlogViewType,
+    CommentPaginatorType, CommentViewType,
+    DeviceViewType, MeViewType,
+    PostPaginatorType, PostViewType,
+    UserPaginatorType, UserViewType
+} from "../types/viewTypes";
 
 @injectable()
 export class BlogsQueryRepo {

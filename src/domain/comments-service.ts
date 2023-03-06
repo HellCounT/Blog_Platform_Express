@@ -1,9 +1,11 @@
-import {CommentDbClass, CommentViewType, LikeStatus, StatusType} from "../types/types";
+import {LikeStatus, StatusType} from "../types/types";
 import {ObjectId} from "mongodb";
 import {CommentsRepoClass} from "../repositories/comments-repo";
 import {LikesForCommentsServiceClass} from "./likes-service";
 import {CommentsQueryRepo, PostsQueryRepo, UsersQueryRepo} from "../repositories/query-repo";
 import {inject, injectable} from "inversify";
+import {CommentDbClass} from "../types/dbClasses";
+import {CommentViewType} from "../types/viewTypes";
 
 @injectable()
 export class CommentsServiceClass {

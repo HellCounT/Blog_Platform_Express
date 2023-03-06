@@ -1,11 +1,13 @@
 import bcrypt from 'bcrypt'
 import {UsersRepoClass} from "../repositories/users-repo";
-import {UserDbClass, UserDbType, UserViewType} from "../types/types";
 import {ObjectId, WithId} from "mongodb";
 import {v4 as uuidv4} from "uuid";
 import add from 'date-fns/add'
 import {emailManager} from "../managers/email-manager";
 import {inject, injectable} from "inversify";
+import {UserDbType} from "../types/dbTypes";
+import {UserDbClass} from "../types/dbClasses";
+import {UserViewType} from "../types/viewTypes";
 
 @injectable()
 export class UsersServiceClass {

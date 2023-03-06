@@ -1,13 +1,17 @@
 import dotenv from "dotenv"
 import {
-    ActiveSessionDbType,
-    CommentDbType,
-    ExpiredTokenInsertDbType, CommentLikeDbType,
-    UserDbType, PostLikeDbType, PostDbType, LikeStatus, BlogDbType
+    LikeStatus
 } from "../types/types"
 import {settings} from "../settings"
 import mongoose from "mongoose"
 import {ObjectId} from "mongodb";
+import {
+    ActiveSessionDbType, BlogDbType,
+    CommentDbType,
+    CommentLikeDbType,
+    ExpiredTokenInsertDbType, PostDbType, PostLikeDbType,
+    UserDbType
+} from "../types/dbTypes";
 dotenv.config()
 
 const mongoUri = settings.MONGO_URI

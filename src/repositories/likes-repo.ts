@@ -1,6 +1,7 @@
-import {CommentLikeDbType, LikeStatus, PostLikeDbType} from "../types/types";
+import {LikeStatus} from "../types/types";
 import {LikeInCommentModelClass, LikeInPostModelClass} from "./db";
 import {injectable} from "inversify";
+import {CommentLikeDbType, PostLikeDbType} from "../types/dbTypes";
 
 @injectable()
 export class LikesForCommentsRepoClass {

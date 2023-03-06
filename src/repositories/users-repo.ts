@@ -1,7 +1,8 @@
 import {ObjectId, WithId} from "mongodb";
-import {UserDbType, UserViewType} from "../types/types";
 import {UserModelClass} from "./db";
 import {injectable} from "inversify";
+import {UserDbType} from "../types/dbTypes";
+import {UserViewType} from "../types/viewTypes";
 
 @injectable()
 export class UsersRepoClass {

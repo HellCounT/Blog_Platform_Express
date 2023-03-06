@@ -1,7 +1,9 @@
 import {ObjectId} from "mongodb";
-import {LikeStatus, PostDbType, PostViewType} from "../types/types";
+import {LikeStatus} from "../types/types";
 import {BlogModelClass, PostModelClass} from "./db";
 import {injectable} from "inversify";
+import {PostDbType} from "../types/dbTypes";
+import {PostViewType} from "../types/viewTypes";
 
 @injectable()
 export class PostsRepoClass {
