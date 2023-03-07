@@ -6,13 +6,15 @@ import {
     paramIdInputValidation,
     postDataValidator
 } from "../middleware/data-validation";
-import {authMiddleware} from "../middleware/auth-middleware";
 import {container} from "../composition-root";
 import {BlogsControllerClass} from "../controllers/blogs-controller";
+import {AuthMiddleware} from "../middleware/auth-middleware";
 
 export const blogsRouter = Router({})
+const authMiddleware = container.resolve(AuthMiddleware)
 
 const blogsController = container.resolve(BlogsControllerClass)
+
 
 blogsRouter.get('/', blogsController.getAllBlogs.bind(blogsController))
 

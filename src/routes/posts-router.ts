@@ -7,13 +7,14 @@ import {
     paramIdInputValidation,
     postDataValidator
 } from "../middleware/data-validation";
-import {authMiddleware} from "../middleware/auth-middleware";
 import {container} from "../composition-root";
 import {PostsControllerClass} from "../controllers/posts-controller";
+import {AuthMiddleware} from "../middleware/auth-middleware";
 
 export const postsRouter = Router({})
 
 const postsController = container.resolve(PostsControllerClass)
+const authMiddleware = container.resolve(AuthMiddleware)
 
 postsRouter.get('/',
     authMiddleware.parseUserIdByToken,
