@@ -235,8 +235,8 @@ export class UsersQueryRepo {
         const allUsersCount = await UserModelClass.countDocuments(
             {
                 $or: [
-                    {login: {$regex: loginFilter, $options: 'i'}},
-                    {email: {$regex: emailFilter, $options: 'i'}}
+                    {'accountData.login': {$regex: loginFilter, $options: 'i'}},
+                    {'accountData.email': {$regex: emailFilter, $options: 'i'}}
                 ]
             }
         )
