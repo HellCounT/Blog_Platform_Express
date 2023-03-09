@@ -19,7 +19,10 @@ export class BlogsServiceClass {
         const result = await this.blogsRepo.createBlog(newBlog)
         return {
             id: result._id.toString(),
-            ...newBlog
+            name: result.name,
+            description: result.description,
+            websiteUrl: result.websiteUrl,
+            createdAt: result.createdAt,
         }
     }
     async updateBlog(inputId: string, title: string, desc: string, website: string): Promise<boolean | null> {
