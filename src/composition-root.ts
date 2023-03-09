@@ -19,6 +19,7 @@ import {DevicesControllerClass} from "./controllers/devices-controller";
 import {PostsControllerClass} from "./controllers/posts-controller";
 import {UsersControllerClass} from "./controllers/users-controller";
 import {BlogsQueryRepo, CommentsQueryRepo, PostsQueryRepo, UsersQueryRepo} from "./repositories/query-repo";
+import {AuthMiddleware} from "./middleware/auth-middleware";
 
 // const commentsRepo = new CommentsRepoClass()
 // const likesForCommentsRepo = new LikesForCommentsRepoClass()
@@ -81,5 +82,6 @@ container.bind<DevicesServiceClass>(DevicesServiceClass).toSelf()
 container.bind<DevicesControllerClass>(DevicesControllerClass).toSelf()
 
 container.bind<AuthControllerClass>(AuthControllerClass).toSelf()
+container.bind<AuthMiddleware>(AuthMiddleware).toSelf()
 
 
